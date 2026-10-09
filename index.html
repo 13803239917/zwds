@@ -1,0 +1,1942 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>中天太极4.0紫微数排盘</title>
+<script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4a90d9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="太极4.0">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; margin: 20px; background: #f5f5f5; }
+  h1 { color: #333; }
+  .input-area { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+  .input-row { margin: 8px 0; }
+  label { margin-right: 15px; }
+  input, select, textarea { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 14px; }
+  textarea { resize: vertical; width: 100%; max-width: 720px; }
+  button { padding: 8px 16px; background: #4a90d9; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; margin-right: 6px; }
+  button:hover { filter: brightness(0.92); }
+  button.btn-success { background: #28a745; }
+  button.btn-warning { background: #f0ad4e; }
+  button.btn-secondary { background: #6c757d; }
+  button.btn-danger { background: #dc3545; }
+  .hint { font-size: 12px; color: #888; margin-top: 5px; }
+  .pan-type-switch { display: inline-flex; border: 1px solid #4a90d9; border-radius: 4px; overflow: hidden; margin-right: 10px; vertical-align: middle; }
+  .pan-type-switch button { border-radius: 0; margin: 0; padding: 8px 14px; background: #fff; color: #4a90d9; border: none; font-weight: bold; }
+  .pan-type-switch button.active { background: #4a90d9; color: #fff; }
+  .pan-wrap { position: relative; max-width: 1000px; margin: 50px auto; }
+  .zihua-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; overflow: visible; }
+  .pan-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 230px); gap: 0; background: #fff; border: 2px solid #333; width: 100%; position: relative; z-index: 1; }
+  .cell { border: 1px solid #333; position: relative; padding: 6px; font-size: 13px; line-height: 1.6; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+  .cell:hover { background: #f8fbff; }
+  .cell.active-gong { background: #fff8e1; outline: 2px solid #dc3545; outline-offset: -2px; }
+  .cell-center { grid-column: 2 / 4; grid-row: 2 / 4; border: none; background: #fff; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 14px; line-height: 1.8; cursor: default; }
+  .cell-center h2 { font-size: 18px; margin: 0 0 10px 0; color: #333; }
+  .cell-center p { margin: 3px 0; width: 100%; }
+  .cell-center b { color: #4a90d9; }
+  .stars { flex: 1; overflow-y: auto; padding-top: 4px; }
+  .top-line-row { display: flex; justify-content: space-between; align-items: center; padding: 1px 4px; font-size: 12px; font-weight: bold; gap: 4px; }
+  .changsheng-line { color: #0066cc; text-align: left; flex-shrink: 0; }
+  .zihua-tag-row {
+    position: relative;
+    min-height: 15px;
+    margin-bottom: 0;
+  }
+  .zihua-tag-row .sihua {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    border-radius: 0;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .zihua-tag-row .sihua-lu { color: #28a745 !important; background: transparent !important; }
+  .zihua-tag-row .sihua-quan { color: #8e44ad !important; background: transparent !important; }
+  .zihua-tag-row .sihua-ke { color: #007bff !important; background: transparent !important; }
+  .zihua-tag-row .sihua-ji { color: #dc3545 !important; background: transparent !important; }
+  .zihua-tag-row .sihua-kui { color: #17a2b8 !important; background: transparent !important; }
+  .zihua-tag-row .sihua-fu { color: #ff9800 !important; background: transparent !important; }
+  .zihua-tag-row .sihua-huo { color: #dc3545 !important; background: transparent !important; }
+  .liunian-label { flex: 1; text-align: center; font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; display: flex; flex-direction: column; align-items: center; line-height: 1.2; gap: 1px; }
+  .liunian-label .xx-line { color: #6a1b9a; }
+  .liunian-label .nm-line { color: #c00; }
+  .right-labels { display: flex; gap: 3px; align-items: center; flex-shrink: 0; }
+  .sheng-line { color: #c00; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; line-height: 1.1; }
+  .laiyin-line { color: #dc3545; font-weight: bold; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; line-height: 1.1; border: 2px solid #dc3545; padding: 2px 1px; border-radius: 3px; background: #fff8e1; }
+  .bottom-bar { display: flex; justify-content: space-between; align-items: stretch; border-top: 1px solid #333; padding-top: 0; gap: 0; min-height: 56px; }
+  .left-stack { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; min-width: 34px; padding: 2px 4px; border-right: 1px solid #333; }
+  .tiangan { font-size: 18px; color: #333; font-weight: bold; line-height: 1.2; }
+  .dizhi { font-size: 18px; color: #c00; font-weight: bold; line-height: 1.2; }
+  .center-info { flex: 1; display: flex; flex-direction: column; align-items: stretch; padding: 0; border-right: 1px solid #333; }
+  .center-top { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; }
+  .daxian-name { font-size: 18px; color: #333; font-weight: bold; white-space: nowrap; }
+  .center-divider { border-top: 1px solid #333; margin: 0; }
+  .age-range { padding: 2px 6px; font-size: 14px; color: #333; font-weight: bold; text-align: center; white-space: nowrap; }
+  .right-vertical { display: flex; align-items: center; justify-content: center; flex-shrink: 0; min-width: 30px; padding: 2px 4px; }
+  .gong-name-vertical { font-size: 18px; font-weight: bold; color: #333; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 3px; }
+  .star-group { display: inline-flex; flex-direction: column; align-items: center; vertical-align: top; margin-right: 10px; }
+  .star-key { color: #c00; font-weight: bold; display: inline-block; writing-mode: vertical-rl; text-orientation: upright; font-size: 18px; line-height: 1.1; padding: 2px 1px; border-radius: 3px; }
+  .star-name { color: #333; display: inline-block; writing-mode: vertical-rl; text-orientation: upright; font-size: 18px; line-height: 1.1; padding: 2px 1px; border-radius: 3px; }
+  .miaowang { font-size: 14px; line-height: 1.1; margin-top: 2px; font-weight: bold; color: #999; }
+  .miaowang.miao { color: #c00; }
+  .miaowang.li { color: #007bff; }
+  .miaowang.xian { color: #666; }
+  .miaowang.wang { color: #28a745; }
+  .sihua {
+    display: inline-block;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1;
+    padding: 2px 5px;
+    border-radius: 3px;
+    margin-top: 2px;
+    margin-right: 1px;
+    color: #fff;
+    vertical-align: top;
+  }
+  .sihua-lu { background: #28a745; }
+  .sihua-quan { background: #8e44ad; }
+  .sihua-ke { background: #007bff; }
+  .sihua-ji { background: #dc3545; }
+  .sihua-kui { background: #17a2b8; }
+  .sihua-fu { background: #ff9800; }
+  .sihua-huo { background: #dc3545; }
+  .v-star { display: inline-block; writing-mode: vertical-rl; text-orientation: upright; margin-right: 8px; padding: 3px 2px; border-radius: 3px; font-size: 13px; line-height: 1.1; vertical-align: top; }
+  .v-star.waiju { background: #e8d9f5; color: #6a1b9a; }
+  .v-star.maqian { background: #e0e0e0; color: #333; }
+  .feihua-lu { color: #fff !important; background: #28a745 !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  .feihua-quan { color: #fff !important; background: #8e44ad !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  .feihua-ke { color: #fff !important; background: #007bff !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  .feihua-ji { color: #fff !important; background: #dc3545 !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  .feihua-kui { color: #fff !important; background: #17a2b8 !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  .feihua-fu { color: #fff !important; background: #ff9800 !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  .feihua-huo { color: #fff !important; background: #dc3545 !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  .timeline { margin-top: 10px; background: #fff; border: 1px solid #333; border-radius: 4px; overflow-x: auto; }
+  .timeline-row { display: flex; border-bottom: 1px solid #333; min-height: 50px; }
+  .timeline-row:last-child { border-bottom: none; }
+  .timeline-label { flex-shrink: 0; width: 60px; background: #f0f0f0; font-weight: bold; display: flex; align-items: center; justify-content: center; border-right: 1px solid #333; font-size: 13px; }
+  .timeline-cells { display: flex; flex: 1; }
+  .timeline-cell { flex: 1; padding: 4px 6px; text-align: center; border-right: 1px solid #ccc; font-size: 12px; line-height: 1.5; min-width: 60px; cursor: pointer; user-select: none; }
+  .timeline-cell:last-child { border-right: none; }
+  .timeline-cell:hover { background: #eaf4ff; }
+  .timeline-cell.active { background: #fff3cd; border: 2px solid #dc3545; font-weight: bold; }
+  .timeline-cell.ln-active { background: #ffe6e6; border: 2px solid #dc3545; font-weight: bold; color: #c00; }
+  .timeline-cell .age { color: #333; font-weight: bold; }
+  .timeline-cell .gz { color: #666; font-size: 11px; }
+  .feihua-legend { margin-top: 10px; padding: 8px 12px; background: #fff; border-radius: 4px; font-size: 13px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .feihua-legend span { margin-right: 15px; font-weight: bold; }
+  .feihua-legend .lu { color: #fff; background: #28a745; padding: 2px 8px; border-radius: 3px; }
+  .feihua-legend .quan { color: #fff; background: #8e44ad; padding: 2px 8px; border-radius: 3px; }
+  .feihua-legend .ke { color: #fff; background: #007bff; padding: 2px 8px; border-radius: 3px; }
+  .feihua-legend .ji { color: #fff; background: #dc3545; padding: 2px 8px; border-radius: 3px; }
+  .feihua-legend .kui { color: #fff; background: #17a2b8; padding: 2px 8px; border-radius: 3px; }
+  .feihua-legend .fu { color: #fff; background: #ff9800; padding: 2px 8px; border-radius: 3px; }
+  .feihua-legend .huo { color: #fff; background: #dc3545; padding: 2px 8px; border-radius: 3px; }
+  .error { color: red; font-weight: bold; }
+  .case-panel { background: #fff; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow: hidden; }
+  .case-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #eef3fa; border-bottom: 1px solid #d0dbe8; font-weight: bold; color: #333; }
+  .case-panel-header .actions button { padding: 5px 12px; font-size: 13px; }
+  .case-toolbar { padding: 10px 15px; background: #f8f9fb; border-bottom: 1px solid #eee; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .case-search { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 200px; }
+  .case-search input { flex: 1; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+  .case-search button { padding: 4px 10px; font-size: 12px; }
+  .group-tabs { padding: 6px 15px 10px; background: #f8f9fb; border-bottom: 1px solid #eee; display: flex; gap: 6px; flex-wrap: wrap; }
+  .group-tab { padding: 4px 12px; background: #fff; border: 1px solid #d0dbe8; border-radius: 14px; cursor: pointer; font-size: 12px; color: #333; }
+  .group-tab:hover { background: #eef3fa; }
+  .group-tab.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+  .group-tab .count { opacity: 0.7; margin-left: 4px; }
+  .group-mgr { padding: 12px 15px; background: #fffbf0; border-bottom: 1px solid #f0d9b5; }
+  .group-mgr .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 16px; }
+  .group-mgr .row { display: flex; align-items: center; gap: 6px; }
+  .group-mgr .row label { width: 44px; font-size: 12px; color: #666; flex-shrink: 0; }
+  .group-mgr .row input { flex: 1; padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+  .case-list { max-height: 480px; overflow-y: auto; }
+  .case-empty { padding: 20px; text-align: center; color: #999; font-size: 13px; }
+  .case-item { display: flex; align-items: flex-start; padding: 10px 15px; border-bottom: 1px solid #eee; gap: 10px; }
+  .case-item:hover { background: #f8fbff; }
+  .case-item.active { background: #fff8e1; box-shadow: inset 4px 0 0 #dc3545; }
+  .case-info { flex: 1; min-width: 0; }
+  .case-title { font-weight: bold; color: #333; margin-bottom: 3px; font-size: 14px; }
+  .case-title .cloud-badge { display: inline-block; font-size: 11px; color: #28a745; margin-left: 6px; font-weight: normal; }
+  .case-title .grp-badge { display: inline-block; font-size: 11px; background: #eef3fa; color: #4a90d9; padding: 1px 6px; border-radius: 8px; margin-left: 6px; font-weight: normal; }
+  .case-meta { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .case-note { font-size: 12px; color: #555; white-space: pre-wrap; word-break: break-word; line-height: 1.5; max-height: 60px; overflow: hidden; }
+  .case-actions { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+  .case-actions button { padding: 3px 10px; font-size: 12px; margin: 0; }
+  .case-actions select { padding: 3px 6px; font-size: 11px; }
+  .gist-config { padding: 12px 15px; background: #f8f9fb; border-bottom: 1px solid #eee; font-size: 13px; }
+  .gist-config .row { margin: 6px 0; }
+  .gist-config label { display: inline-block; width: 110px; color: #555; }
+  .gist-config input[type=text], .gist-config input[type=password] { width: 380px; max-width: 60%; font-family: monospace; }
+  .gist-config .tip { color: #888; font-size: 12px; margin-top: 6px; line-height: 1.7; }
+  .gist-config .tip a { color: #4a90d9; }
+  .search-hit { background: #fff3b0; padding: 0 2px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<h1>中天太极4.0紫微数排盘</h1>
+
+<div class="input-area">
+  <div class="input-row">
+    <label>历法：<select id="calendarType"><option value="lunar">农历</option><option value="solar">公历</option></select></label>
+    <label>年：<input type="number" id="inputYear" value="1997" style="width:70px"></label>
+    <label>月：<input type="number" id="inputMonth" value="2" min="1" max="12" style="width:50px"></label>
+    <label>日：<input type="number" id="inputDay" value="24" min="1" max="30" style="width:50px"></label>
+  </div>
+  <div class="input-row">
+    <label>时：<input type="number" id="inputHour" value="14" min="0" max="23" style="width:50px"></label>
+    <label>分：<input type="number" id="inputMinute" value="0" min="0" max="59" style="width:50px"></label>
+    <label>性别：<select id="gender"><option value="男">男</option><option value="女">女</option></select></label>
+  </div>
+  <div class="input-row">
+    <label>案例名：<input type="text" id="caseName" placeholder="留空自动生成" style="width:240px"></label>
+    <label>分组：<select id="caseGroupSelect" style="width:130px;"></select></label>
+  </div>
+  <div class="input-row">
+    <label style="vertical-align:top;">笔记：</label>
+    <textarea id="caseNote" rows="3" placeholder="命主性格、断语、验证情况、六亲、职业…"></textarea>
+  </div>
+  <div class="input-row">
+    <span class="pan-type-switch">
+      <button id="btn-zhtj" class="active" onclick="switchPanType('zhongtian')">中天太极</button>
+      <button id="btn-zhtj6" onclick="switchPanType('zhongtian6')">中天六化</button>
+      <button id="btn-ziwei" onclick="switchPanType('ziwei')">紫微斗数</button>
+    </span>
+    <button onclick="paipan()">排盘</button>
+    <button onclick="saveCase()" class="btn-success">保存案例</button>
+    <button onclick="updateCurrentCase()" id="btnUpdate" class="btn-warning" style="display:none;">更新当前案例</button>
+    <button onclick="newCase()" class="btn-secondary">新建</button>
+    <button onclick="toggleCaseList()" class="btn-secondary">案例库 <span id="caseCount">0</span></button>
+    <button onclick="exportCases()" class="btn-secondary">导出JSON</button>
+    <button onclick="document.getElementById('importFile').click()" class="btn-secondary">导入JSON</button>
+    <input type="file" id="importFile" accept=".json" onchange="importCases(event)" style="display:none">
+  </div>
+  <div class="hint">时：填 0-23 小时数。分：填 0-59。0时=子时，14时=未时。</div>
+</div>
+
+<div id="casePanel" class="case-panel" style="display:none;">
+  <div class="case-panel-header">
+    <span class="title">📁 案例库（<span id="caseCount2">0</span> 条）</span>
+    <span class="actions">
+      <button onclick="toggleGistConfig()" class="btn-secondary">☁ Gist 同步</button>
+      <button onclick="toggleGroupMgr()" class="btn-secondary">📂 分组管理</button>
+      <button onclick="toggleCaseList()" class="btn-secondary">收起</button>
+    </span>
+  </div>
+  <div id="groupMgrPanel" class="group-mgr" style="display:none;">
+    <div style="margin-bottom:8px;font-weight:bold;font-size:13px;">✏ 分组名称（修改后自动保存；共 20 组）</div>
+    <div class="grid" id="groupMgrGrid"></div>
+  </div>
+  <div id="gistConfigPanel" class="gist-config" style="display:none;">
+    <div class="row">
+      <label><input type="checkbox" id="gistEnabled"> 启用 Gist 同步</label>
+      <label style="width:auto;margin-left:15px;"><input type="checkbox" id="gistAutoSync" checked> 改动自动上传</label>
+    </div>
+    <div class="row"><label>GitHub Token：</label><input type="password" id="gistToken" placeholder="ghp_... 或 github_pat_..."></div>
+    <div class="row"><label>Gist ID：</label><input type="text" id="gistId" placeholder="留空则首次自动创建"></div>
+    <div class="row"><label>文件名：</label><input type="text" id="gistFilename" value="zwds_cases.json" style="width:220px;"></div>
+    <div class="row" id="gistStatus" style="color:#666;font-size:12px;"></div>
+    <div class="row">
+      <button onclick="saveGistConfigUI()" class="btn-success">保存配置</button>
+      <button onclick="gistTest()" class="btn-secondary">测试连接</button>
+      <button onclick="gistBackupNow()" class="btn-warning">立即上传</button>
+      <button onclick="gistRestoreNow()" class="btn-danger">从 Gist 恢复</button>
+    </div>
+    <div class="tip">
+      1️⃣ 到 <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a> 生成 Token，只勾 <b>gist</b> 权限。<br>
+      2️⃣ 粘贴 Token，点「保存配置」。首次启用会自动创建 Gist。<br>
+      3️⃣ 换电脑/浏览器：同一 Token 和 Gist ID，点「从 Gist 恢复」即可。<br>
+      4️⃣ 本地 IndexedDB 是主存储，Gist 只是副本。
+    </div>
+  </div>
+  <div class="case-toolbar">
+    <div class="case-search">
+      <span style="font-size:14px;color:#666;">🔍</span>
+      <input type="text" id="caseSearchInput" placeholder="搜索案例名 / 笔记 / 日期 / 性别…" oninput="onSearchInput(this.value)">
+      <button class="btn-secondary" onclick="clearSearch()">清空</button>
+    </div>
+  </div>
+  <div class="group-tabs" id="groupTabs"></div>
+  <div id="caseList" class="case-list"></div>
+</div>
+
+<div id="result"></div>
+
+<script>
+var DIZHI = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+var TIANGAN = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+var YANG_GAN = ["甲","丙","戊","庚","壬"];
+var GONG_NAMES = ["命宫","兄弟","夫妻","子女","财帛","疾厄","迁移","奴仆","官禄","田宅","福德","父母"];
+var GONG_NAMES_LN = ["年命","年兄","年夫","年子","年财","年疾","年迁","年奴","年官","年田","年福","年父"];
+var GONG_NAMES_XX = ["小命","小兄","小夫","小子","小财","小疾","小迁","小奴","小官","小田","小福","小父"];
+var GONG_SHORT_DA = ["命","兄","夫","子","财","疾","迁","奴","官","田","福","父"];
+var YANG_GONG = ["寅","午","戌","申","子","辰"];
+var WUXING_JU = {"水":2,"木":3,"金":4,"土":5,"火":6};
+var JU_NAME = {2:"水二局",3:"木三局",4:"金四局",5:"土五局",6:"火六局"};
+
+var GONG_SIHUA = {
+  "甲":{"禄":["天暴"],"权":["五鬼"],"科":["天雷"],"忌":["太常"]},
+  "乙":{"禄":["天驿"],"权":["进神"],"科":["太极"],"忌":["天医"]},
+  "丙":{"禄":["凤皇"],"权":["天驿"],"科":["凤阁"],"忌":["天暴"]},
+  "丁":{"禄":["天医"],"权":["凤皇"],"科":["天驿"],"忌":["白衣"]},
+  "戊":{"禄":["严蛇"],"权":["天医"],"科":["右弼"],"忌":["天驿"]},
+  "己":{"禄":["天雷"],"权":["严蛇"],"科":["进神"],"忌":["龙池"]},
+  "庚":{"禄":["太常"],"权":["天雷"],"科":["天医"],"忌":["凤皇"]},
+  "辛":{"禄":["白衣"],"权":["太常"],"科":["龙池"],"忌":["凤阁"]},
+  "壬":{"禄":["进神"],"权":["太极"],"科":["左辅"],"忌":["天雷"]},
+  "癸":{"禄":["五鬼"],"权":["白衣"],"科":["天医"],"忌":["严蛇"]}
+};
+
+var SIHUA = {
+  "甲":{"天暴":["禄"],"五鬼":["权"],"天雷":["科"],"太常":["忌"]},
+  "乙":{"天驿":["禄"],"进神":["权"],"太极":["科"],"天医":["忌"]},
+  "丙":{"凤皇":["禄"],"天驿":["权"],"凤阁":["科"],"天暴":["忌"]},
+  "丁":{"天医":["禄"],"凤皇":["权"],"天驿":["科"],"白衣":["忌"]},
+  "戊":{"严蛇":["禄"],"天医":["权"],"右弼":["科"],"天驿":["忌"]},
+  "己":{"天雷":["禄"],"严蛇":["权"],"进神":["科"],"龙池":["忌"]},
+  "庚":{"太常":["禄"],"天雷":["权"],"天医":["科"],"凤皇":["忌"]},
+  "辛":{"白衣":["禄"],"太常":["权"],"龙池":["科"],"凤阁":["忌"]},
+  "壬":{"进神":["禄"],"太极":["权"],"左辅":["科"],"天雷":["忌"]},
+  "癸":{"五鬼":["禄"],"白衣":["权"],"天医":["科"],"严蛇":["忌"]}
+};
+
+var GONG_SIHUA_SIX = {
+  "甲":{"科":["天雷"],"魁":["天医"],"禄":["天暴","凤皇"],"权":["五鬼"],"福":["天医"],"祸":["天雷"]},
+  "乙":{"科":["太极"],"魁":["天雷"],"禄":["天驿","天雷"],"权":["天驿"],"福":["白衣"],"祸":["太常"]},
+  "丙":{"科":["凤阁"],"魁":["太常"],"禄":["凤皇","五鬼"],"权":["天医"],"福":["天暴"],"祸":["白衣"]},
+  "丁":{"科":["天驿"],"魁":["天暴"],"禄":["天医","凤皇"],"权":["天医"],"福":["进神"],"祸":["进神"]},
+  "戊":{"科":["凤阁"],"魁":["天驿"],"禄":["严蛇","天医"],"权":["天相"],"福":["右弼"],"祸":["五鬼"]},
+  "己":{"科":["进神"],"魁":["凤阁"],"禄":["天雷","太常"],"权":["太常"],"福":["龙池"],"祸":["天暴"]},
+  "庚":{"科":["天暴"],"魁":["龙池"],"禄":["太常","天暴"],"权":["白衣"],"福":["凤皇"],"祸":["天驿"]},
+  "辛":{"科":["龙池"],"魁":["白衣"],"禄":["白衣","天医"],"权":["进神"],"福":["凤阁"],"祸":["凤皇"]},
+  "壬":{"科":["太常"],"魁":["进神"],"禄":["进神","太极"],"权":["天暴"],"福":["天雷"],"祸":["天医"]},
+  "癸":{"科":["天医"],"魁":["凤皇"],"禄":["五鬼","天暴"],"权":["凤皇"],"福":["严蛇"],"祸":["严蛇"]}
+};
+
+var SIHUA_SIX = (function() {
+  var result = {};
+  for (var tg in GONG_SIHUA_SIX) {
+    result[tg] = {};
+    var sh = GONG_SIHUA_SIX[tg];
+    for (var type in sh) {
+      var stars = sh[type];
+      for (var i=0; i<stars.length; i++) {
+        var s = stars[i];
+        if (!result[tg][s]) result[tg][s] = [];
+        result[tg][s].push(type);
+      }
+    }
+  }
+  return result;
+})();
+
+var SIHUA_SYMBOL_ABCD = {"禄":"A","权":"B","科":"C","忌":"D"};
+var SIHUA_SYMBOL_HANZI = {"禄":"禄","权":"权","科":"科","忌":"忌","魁":"魁","福":"福","祸":"祸"};
+var SIHUA_CLS = {"禄":"lu","权":"quan","科":"ke","忌":"ji","魁":"kui","福":"fu","祸":"huo"};
+var SIHUA_COLOR = {"禄":"#28a745","权":"#8e44ad","科":"#007bff","忌":"#dc3545","魁":"#17a2b8","福":"#ff9800","祸":"#dc3545"};
+var SIHUA_PRIORITY = {"feihua-huo":7,"feihua-ji":6,"feihua-fu":5,"feihua-quan":4,"feihua-ke":3,"feihua-kui":2,"feihua-lu":1};
+
+var MIAOWANG = {
+  "太极":{"庙":["辰","巳","午","未"],"利":[],"陷":[]},
+  "天驿":{"庙":["丑","酉","亥","午"],"利":["寅","卯","辰","巳"],"陷":["申","酉","戌","亥"]},
+  "太常":{"庙":["子","午","卯","酉"],"利":["寅","卯","辰","巳"],"陷":["申","酉","戌","亥"]},
+  "天雷":{"庙":["卯","戌"],"利":[],"陷":["辰","丑"]},
+  "凤皇":{"庙":["酉","戌","亥","申"],"利":["寅","卯","亥","子"],"陷":["巳","午","申"]},
+  "天暴":{"庙":["寅","申"],"利":[],"陷":["辰","戌"]},
+  "天库":{"庙":["子","戌"],"利":[],"陷":[]},
+  "天医":{"庙":["寅","亥","未","酉"],"利":["戌","亥","子"],"陷":["巳","午","申","酉","卯"]},
+  "严蛇":{"庙":["子","丑","寅"],"利":["辰","戌","未"],"陷":[]},
+  "白衣":{"庙":["亥","子","卯"],"利":[],"陷":[]},
+  "天相":{"庙":["寅","卯","午","戌"],"利":[],"陷":[]},
+  "进神":{"庙":["卯","申","辰","巳"],"利":[],"陷":[]},
+  "暗金":{"庙":["寅","申","午","戌"],"利":[],"陷":[]},
+  "五鬼":{"庙":["子","未","戌","亥"],"利":[],"陷":["午"]}
+};
+
+var NAYIN = {
+  "甲子":"海中金","乙丑":"海中金","丙寅":"炉中火","丁卯":"炉中火","戊辰":"大林木","己巳":"大林木",
+  "庚午":"路旁土","辛未":"路旁土","壬申":"剑锋金","癸酉":"剑锋金","甲戌":"山头火","乙亥":"山头火",
+  "丙子":"涧下水","丁丑":"涧下水","戊寅":"城头土","己卯":"城头土","庚辰":"白蜡金","辛巳":"白蜡金",
+  "壬午":"杨柳木","癸未":"杨柳木","甲申":"泉中水","乙酉":"泉中水","丙戌":"屋上土","丁亥":"屋上土",
+  "戊子":"霹雳火","己丑":"霹雳火","庚寅":"松柏木","辛卯":"松柏木","壬辰":"长流水","癸巳":"长流水",
+  "甲午":"沙中金","乙未":"沙中金","丙申":"山下火","丁酉":"山下火","戊戌":"平地木","己亥":"平地木",
+  "庚子":"壁上土","辛丑":"壁上土","壬寅":"金箔金","癸卯":"金箔金","甲辰":"覆灯火","乙巳":"覆灯火",
+  "丙午":"天河水","丁未":"天河水","戊申":"大驿土","己酉":"大驿土","庚戌":"钗钏金","辛亥":"钗钏金",
+  "壬子":"桑柘木","癸丑":"桑柘木","甲寅":"大溪水","乙卯":"大溪水","丙辰":"沙中土","丁巳":"沙中土",
+  "戊午":"天上火","己未":"天上火","庚申":"石榴木","辛酉":"石榴木","壬戌":"大海水","癸亥":"大海水"
+};
+
+var XISHU = {
+  "金":[[1,7,"寅"],[8,11,"卯"],[12,15,"辰"],[16,19,"巳"],[20,23,"午"],[24,27,"未"],[28,30,"申"]],
+  "木":[[1,5,"寅"],[6,8,"卯"],[9,11,"辰"],[12,14,"巳"],[15,17,"午"],[18,20,"未"],[21,23,"申"],[24,26,"酉"],[27,29,"戌"],[30,30,"亥"]],
+  "水":[[1,3,"寅"],[4,5,"卯"],[6,7,"辰"],[8,9,"巳"],[10,11,"午"],[12,13,"未"],[14,15,"申"],[16,17,"酉"],[18,19,"戌"],[20,21,"亥"],[22,23,"子"],[24,25,"丑"],[26,29,"卯"],[30,30,"辰"]],
+  "火":[[1,11,"寅"],[12,17,"卯"],[18,23,"辰"],[24,29,"巳"],[30,30,"午"]],
+  "土":[[1,9,"寅"],[10,14,"卯"],[15,19,"辰"],[20,24,"巳"],[25,29,"午"],[30,30,"未"]]
+};
+
+var ZIWEI_TIANFU = {"子":"辰","丑":"卯","寅":"寅","卯":"丑","辰":"子","巳":"亥","午":"戌","未":"酉","申":"申","酉":"未","戌":"午","亥":"巳"};
+
+var HUOXING_LINGXING_MAP = {
+  "寅午戌":{"先勇":"丑","后勇":"卯","天马":"申"},
+  "申子辰":{"先勇":"寅","后勇":"戌","天马":"寅"},
+  "巳酉丑":{"先勇":"卯","后勇":"戌","天马":"亥"},
+  "亥卯未":{"先勇":"酉","后勇":"戌","天马":"巳"}
+};
+var YONGJIANG_MONTH = {1:"戌",2:"巳",3:"午",4:"未",5:"寅",6:"卯",7:"辰",8:"亥",9:"子",10:"丑",11:"申",12:"酉"};
+var KUAYUE_MAP = {
+  "甲":["丑","未"],"戊":["丑","未"],"庚":["丑","未"],
+  "乙":["子","申"],"己":["子","申"],
+  "丙":["亥","酉"],"丁":["亥","酉"],
+  "壬":["卯","巳"],"癸":["卯","巳"],
+  "辛":["午","寅"]
+};
+var LUCUN_MAP = {"甲":"寅","乙":"卯","丙":"巳","戊":"巳","丁":"午","己":"午","庚":"申","辛":"酉","壬":"亥","癸":"子"};
+var NAME_MAP = {
+  "太极":"紫微","天驿":"天机","太常":"太阳","天雷":"武曲","凤皇":"天同",
+  "天暴":"廉贞","天库":"天府","天医":"太阴","严蛇":"贪狼","白衣":"巨门",
+  "进神":"天梁","暗金":"七杀","五鬼":"破军","先勇":"火星","后勇":"铃星",
+  "扫火":"擎羊","烈神":"陀罗","龙池":"文曲","凤阁":"文昌","正禄":"禄存"
+};
+var KEY_STARS = ["太极","天库","紫微","天府"];
+var WAIJU_STARS = ["文贵","八劫","文昌","天伤","印绶","权柄","天孤","五福","天空","天寿","天暗","天刑"];
+var GROUP_BOTTOM = ["亥","子","丑","寅"];
+var GROUP_LEFT = ["卯","辰"];
+var GROUP_RIGHT = ["酉","戌"];
+var GROUP_TOP = ["巳","午","未","申"];
+var DUI_GONG = {"子":"午","午":"子","丑":"未","未":"丑","寅":"申","申":"寅","卯":"酉","酉":"卯","辰":"戌","戌":"辰","巳":"亥","亥":"巳"};
+var CORNER_PAIRS = {"巳":"亥","亥":"巳","寅":"申","申":"寅"};
+
+var PAN_TYPE = "zhongtian";
+var ZW_HUO  = {"寅午戌":"丑","申子辰":"寅","巳酉丑":"卯","亥卯未":"酉"};
+var ZW_LING = {"寅午戌":"卯","申子辰":"戌","巳酉丑":"戌","亥卯未":"戌"};
+var ZW_MA   = {"寅午戌":"申","申子辰":"寅","巳酉丑":"亥","亥卯未":"巳"};
+
+function calcZiweiDz(day, ju) {
+  var shang = Math.floor(day / ju);
+  var yu = day % ju;
+  var pos;
+  if (yu === 0) pos = shang - 1;
+  else {
+    var jie = ju - yu;
+    if (jie % 2 === 0) pos = shang + jie;
+    else pos = shang - jie;
+  }
+  return DIZHI[((2 + pos) % 12 + 12) % 12];
+}
+
+var ZIWEI_SERIES = ["紫微","天机","太阳","武曲","天同","廉贞"];
+var ZIWEI_OFFSETS = [0,-1,-3,-4,-5,-8];
+var TIANFU_SERIES = ["天府","太阴","贪狼","巨门","天相","天梁","七杀","破军"];
+var TIANFU_OFFSETS = [0,1,2,3,4,5,6,10];
+
+var ZIWEI_SIHUA = {
+  "甲":{"廉贞":["禄"],"破军":["权"],"武曲":["科"],"太阳":["忌"]},
+  "乙":{"天机":["禄"],"天梁":["权"],"紫微":["科"],"太阴":["忌"]},
+  "丙":{"天同":["禄"],"天机":["权"],"文昌":["科"],"廉贞":["忌"]},
+  "丁":{"太阴":["禄"],"天同":["权"],"天机":["科"],"巨门":["忌"]},
+  "戊":{"贪狼":["禄"],"太阴":["权"],"右弼":["科"],"天机":["忌"]},
+  "己":{"武曲":["禄"],"贪狼":["权"],"天梁":["科"],"文曲":["忌"]},
+  "庚":{"太阳":["禄"],"武曲":["权"],"太阴":["科"],"天同":["忌"]},
+  "辛":{"巨门":["禄"],"太阳":["权"],"文曲":["科"],"文昌":["忌"]},
+  "壬":{"天梁":["禄"],"紫微":["权"],"左辅":["科"],"武曲":["忌"]},
+  "癸":{"破军":["禄"],"巨门":["权"],"太阴":["科"],"贪狼":["忌"]}
+};
+
+var ZIWEI_GONG_SIHUA = {
+  "甲":{"禄":["廉贞"],"权":["破军"],"科":["武曲"],"忌":["太阳"]},
+  "乙":{"禄":["天机"],"权":["天梁"],"科":["紫微"],"忌":["太阴"]},
+  "丙":{"禄":["天同"],"权":["天机"],"科":["文昌"],"忌":["廉贞"]},
+  "丁":{"禄":["太阴"],"权":["天同"],"科":["天机"],"忌":["巨门"]},
+  "戊":{"禄":["贪狼"],"权":["太阴"],"科":["右弼"],"忌":["天机"]},
+  "己":{"禄":["武曲"],"权":["贪狼"],"科":["天梁"],"忌":["文曲"]},
+  "庚":{"禄":["太阳"],"权":["武曲"],"科":["太阴"],"忌":["天同"]},
+  "辛":{"禄":["巨门"],"权":["太阳"],"科":["文曲"],"忌":["文昌"]},
+  "壬":{"禄":["天梁"],"权":["紫微"],"科":["左辅"],"忌":["武曲"]},
+  "癸":{"禄":["破军"],"权":["巨门"],"科":["太阴"],"忌":["贪狼"]}
+};
+
+var ZIWEI_MIAOWANG = {
+  "紫微":{"庙":["丑","午","未"],"旺":["子","寅","申","酉"],"利":["卯","辰","巳"],"陷":["亥"]},
+  "天机":{"庙":["子","丑","寅","卯"],"旺":["辰","巳","午","未","申","酉"],"利":[],"陷":["戌","亥"]},
+  "太阳":{"庙":["寅","卯","辰","巳","午"],"旺":["丑","未","申"],"利":[],"陷":["子","酉","戌","亥"]},
+  "武曲":{"庙":["辰","戌","丑","未"],"旺":["子","寅","卯","午","申","酉"],"利":[],"陷":["巳","亥"]},
+  "天同":{"庙":["巳","亥","子"],"旺":["卯","辰","午","未","申","酉"],"利":[],"陷":["寅"]},
+  "廉贞":{"庙":["寅","申"],"旺":["子","丑","卯","午","未","酉"],"利":[],"陷":["辰","巳","亥"]},
+  "天府":{"庙":["子","丑","未","辰","戌"],"旺":["寅","卯","巳","午","申","酉"],"利":[],"陷":["亥"]},
+  "太阴":{"庙":["亥","子","丑"],"旺":["寅","卯","辰","巳","酉"],"利":[],"陷":["午","未","申","戌"]},
+  "贪狼":{"庙":["子","午","卯","酉"],"旺":["寅","辰","巳","未","申"],"利":[],"陷":["丑","戌","亥"]},
+  "巨门":{"庙":["子","午","卯","酉"],"旺":["寅","申","巳","亥"],"利":[],"陷":["辰","戌","丑","未"]},
+  "天相":{"庙":["子","午","卯","酉"],"旺":["寅","申","巳","亥"],"利":[],"陷":["辰","戌","丑","未"]},
+  "天梁":{"庙":["子","午","卯","酉"],"旺":["辰","戌","丑","未"],"利":[],"陷":["寅","申","巳","亥"]},
+  "七杀":{"庙":["子","午","卯","酉"],"旺":["寅","申","巳","亥"],"利":[],"陷":["辰","戌","丑","未"]},
+  "破军":{"庙":["子","午","卯","酉"],"旺":["寅","申","巳","亥"],"利":[],"陷":["辰","戌","丑","未"]}
+};
+
+function getWuxing(gz) {
+  var ny = NAYIN[gz]; if (!ny) return "";
+  if (ny.indexOf("金")>=0) return "金";
+  if (ny.indexOf("水")>=0) return "水";
+  if (ny.indexOf("火")>=0) return "火";
+  if (ny.indexOf("土")>=0) return "土";
+  if (ny.indexOf("木")>=0) return "木";
+  return "";
+}
+function getYinGan(yearTg) {
+  var map = {"甲":"丙","己":"丙","乙":"戊","庚":"戊","丙":"庚","辛":"庚","丁":"壬","壬":"壬","戊":"甲","癸":"甲"};
+  return map[yearTg] || "丙";
+}
+function getSanheGroup(yearDz) {
+  if (["寅","午","戌"].indexOf(yearDz)>=0) return "寅午戌";
+  if (["申","子","辰"].indexOf(yearDz)>=0) return "申子辰";
+  if (["巳","酉","丑"].indexOf(yearDz)>=0) return "巳酉丑";
+  if (["亥","卯","未"].indexOf(yearDz)>=0) return "亥卯未";
+  return null;
+}
+function getPalace(palaces, dz) { if (!palaces[dz]) palaces[dz]=[]; return palaces[dz]; }
+
+function isZiwei() { return PAN_TYPE === "ziwei"; }
+function isSix() { return PAN_TYPE === "zhongtian6"; }
+
+function getActiveGongSihuaTable() {
+  if (isZiwei()) return ZIWEI_GONG_SIHUA;
+  if (isSix()) return GONG_SIHUA_SIX;
+  return GONG_SIHUA;
+}
+function getActiveSihuaTable() {
+  if (isZiwei()) return ZIWEI_SIHUA;
+  if (isSix()) return SIHUA_SIX;
+  return SIHUA;
+}
+
+function getSihuaSymbol(type) {
+  if (isSix()) return SIHUA_SYMBOL_HANZI[type] || type;
+  return SIHUA_SYMBOL_ABCD[type] || type;
+}
+function getSixLabel(gGan, star, type) {
+  if (!isSix()) return getSihuaSymbol(type);
+  if (type !== "禄") return getSihuaSymbol(type);
+  var sh = GONG_SIHUA_SIX[gGan];
+  if (!sh || !sh["禄"]) return getSihuaSymbol(type);
+  var luStars = sh["禄"];
+  if (luStars.length <= 1) return getSihuaSymbol(type);
+  var idx = luStars.indexOf(star);
+  if (idx < 0) return getSihuaSymbol(type);
+  return "禄" + String.fromCharCode(65 + idx);
+}
+function getSihuaLabelWithContext(gGan, star, type) {
+  if (isSix()) return getSixLabel(gGan, star, type);
+  return getSihuaSymbol(type);
+}
+function isZihuaLabelInCell(dz) {
+  return (GROUP_BOTTOM.indexOf(dz) >= 0) || (GROUP_TOP.indexOf(dz) >= 0);
+}
+function renderZihuaTags(dz) {
+  if (!PAN_DATA) return "";
+  if (!isZihuaLabelInCell(dz)) return "";
+  var gGan = PAN_DATA.gongGan[dz];
+  if (!gGan) return "";
+  var table = getActiveGongSihuaTable();
+  var sh = table[gGan];
+  if (!sh) return "";
+  var palaceStars = PAN_DATA.palaces[dz];
+  var html = "";
+  for (var type in sh) {
+    var stars = toArr(sh[type]);
+    for (var i=0; i<stars.length; i++) {
+      if (palaceStars.indexOf(stars[i]) >= 0) {
+        var label = getSihuaLabelWithContext(gGan, stars[i], type);
+        html += '<span class="sihua sihua-' + SIHUA_CLS[type] + '" data-zstar="' + stars[i] + '">' + label + '</span>';
+      }
+    }
+  }
+  if (!html) return "";
+  return '<div class="zihua-tag-row">' + html + '</div>';
+}
+
+function getMiaoWang(star, dz) {
+  var m = isZiwei() ? ZIWEI_MIAOWANG[star] : MIAOWANG[star];
+  if (!m) return "";
+  if (m["庙"].indexOf(dz)>=0) return "庙";
+  if (m["陷"].indexOf(dz)>=0) return "陷";
+  if (m["利"].indexOf(dz)>=0) return "利";
+  return "旺";
+}
+function getMiaoWangClass(mw) {
+  if (mw==="庙") return "miaowang miao";
+  if (mw==="利") return "miaowang li";
+  if (mw==="陷") return "miaowang xian";
+  if (mw==="旺") return "miaowang wang";
+  return "miaowang";
+}
+function toArr(v) { return Array.isArray(v) ? v : (v ? [v] : []); }
+
+var PAN_DATA = null;
+var CURRENT_DAXIAN_INDEX = 0;
+var CURRENT_LIUNIAN_AGE = null;
+var CURRENT_FEIHUA_GONG = null;
+
+function paipan() {
+  var calendarType = document.getElementById("calendarType").value;
+  var inputYear = parseInt(document.getElementById("inputYear").value);
+  var inputMonth = parseInt(document.getElementById("inputMonth").value);
+  var inputDay = parseInt(document.getElementById("inputDay").value);
+  var inputHour = parseInt(document.getElementById("inputHour").value);
+  var inputMinute = parseInt(document.getElementById("inputMinute").value) || 0;
+  var gender = document.getElementById("gender").value;
+
+  if (isNaN(inputYear)||isNaN(inputMonth)||isNaN(inputDay)||isNaN(inputHour)) {
+    document.getElementById("result").innerHTML = '<p class="error">请填写完整的日期和时间。</p>'; return;
+  }
+  if (inputHour<0 || inputHour>23) { document.getElementById("result").innerHTML = '<p class="error">小时应为 0-23。</p>'; return; }
+  if (inputMinute<0 || inputMinute>59) { document.getElementById("result").innerHTML = '<p class="error">分钟应为 0-59。</p>'; return; }
+
+  var lunar, solar;
+  try {
+    if (calendarType === "solar") {
+      solar = Solar.fromYmdHms(inputYear, inputMonth, inputDay, inputHour, inputMinute, 0);
+      lunar = solar.getLunar();
+    } else {
+      lunar = Lunar.fromYmdHms(inputYear, inputMonth, inputDay, inputHour, inputMinute, 0);
+      solar = lunar.getSolar();
+    }
+  } catch(e) { document.getElementById("result").innerHTML = '<p class="error">日期无效。</p>'; return; }
+
+  var lunarYear = lunar.getYear();
+  var lm = lunar.getMonth();
+  var lunarMonth = lm < 0 ? -lm : lm;
+  var lunarDay = lunar.getDay();
+  var birthYear = solar.getYear();
+
+  var yearIdxGan = ((lunarYear-4)%10+10)%10;
+  var yearIdxZhi = ((lunarYear-4)%12+12)%12;
+  var yearGZ = TIANGAN[yearIdxGan] + DIZHI[yearIdxZhi];
+  var yGan = yearGZ.charAt(0);
+  var yinGan = getYinGan(yGan);
+  var yinGanIdx = TIANGAN.indexOf(yinGan);
+  var monthGanIdx = (yinGanIdx + lunarMonth - 1) % 10;
+  var monthZhiIdx = (2 + lunarMonth - 1) % 12;
+  var monthGZ = TIANGAN[monthGanIdx] + DIZHI[monthZhiIdx];
+  var dayGZ = lunar.getDayInGanZhi();
+  var hourDzIdx = Math.floor((inputHour+1)/2) % 12;
+  var dayTg = dayGZ.charAt(0);
+  var dayTgIdx = TIANGAN.indexOf(dayTg);
+  var hourTgIdx = (dayTgIdx*2 + hourDzIdx) % 10;
+  var hourGZ = TIANGAN[hourTgIdx] + DIZHI[hourDzIdx];
+
+  var yearTg = yearGZ.charAt(0);
+  var yearDz = yearGZ.charAt(1);
+  var hourDz = hourGZ.charAt(1);
+  var hourWuxing = getWuxing(hourGZ);
+  var ju = WUXING_JU[hourWuxing] || 0;
+  var juName = JU_NAME[ju] || "";
+  if (ju === 0) { document.getElementById("result").innerHTML = '<p class="error">时柱纳音未找到。</p>'; return; }
+  var hourIdx = DIZHI.indexOf(hourDz);
+  if (hourIdx < 0) { document.getElementById("result").innerHTML = '<p class="error">时柱地支无效。</p>'; return; }
+
+  var isYangYear = YANG_GAN.indexOf(yearTg) >= 0;
+
+  var mingGong, shenGong, taijiGong, tiankuGong, palaces, sihua, waiJuText={}, gongGan, juUsed, juNameUsed;
+  var daXianText, daXianData, xiaoXianText={}, csText, maQianText={}, daXianShun;
+  var isYangMing;
+
+  if (isZiwei()) {
+    var zw = paipanZiwei(lunarMonth, lunarDay, hourIdx, yearTg, yearDz, ju);
+    palaces = zw.palaces;
+    mingGong = zw.mingGong;
+    shenGong = zw.shenGong;
+    juUsed = zw.ju;
+    juNameUsed = JU_NAME[juUsed] || "";
+    sihua = zw.sihua;
+    gongGan = zw.gongGan;
+    taijiGong = zw.ziweiGong;
+    tiankuGong = zw.tianfuGong;
+    daXianShun = (isYangYear && gender==="男") || (!isYangYear && gender==="女");
+    daXianText = {}; daXianData = [];
+    var dxIdx = DIZHI.indexOf(mingGong);
+    var dxStart = juUsed;
+    for (var i=0; i<12; i++) {
+      var dz = DIZHI[dxIdx];
+      daXianText[dz] = dxStart + "~" + (dxStart+9);
+      daXianData.push({dz:dz, start:dxStart, end:dxStart+9});
+      dxStart += 10;
+      if (daXianShun) dxIdx = (dxIdx+1)%12; else dxIdx = (dxIdx-1+12)%12;
+    }
+    var groupZ = getSanheGroup(yearDz);
+    var xxStartDz = "";
+    if (groupZ==="寅午戌") xxStartDz="辰";
+    else if (groupZ==="申子辰") xxStartDz="戌";
+    else if (groupZ==="巳酉丑") xxStartDz="未";
+    else if (groupZ==="亥卯未") xxStartDz="丑";
+    var xxShun = (gender === "男");
+    var xxIdx = DIZHI.indexOf(xxStartDz);
+    for (var age=1; age<=12; age++) {
+      xiaoXianText[DIZHI[xxIdx]] = age + "岁";
+      if (xxShun) xxIdx = (xxIdx+1)%12; else xxIdx = (xxIdx-1+12)%12;
+    }
+    var yearWuxingZ = getWuxing(yearGZ);
+    var csStartZ = "";
+    if (yearWuxingZ==="火") csStartZ="寅";
+    else if (yearWuxingZ==="金") csStartZ="巳";
+    else if (yearWuxingZ==="木") csStartZ="亥";
+    else if (yearWuxingZ==="水"||yearWuxingZ==="土") csStartZ="申";
+    var csNamesZ = ["长生","沐浴","冠带","临官","帝旺","衰","病","死","墓","绝","胎","养"];
+    csText = {};
+    var csIdxZ = DIZHI.indexOf(csStartZ);
+    for (var i=0; i<12; i++) csText[DIZHI[(csIdxZ+i)%12]] = csNamesZ[i];
+  } else {
+    sihua = getActiveSihuaTable()[yearTg] || {};
+    var isYangHour = YANG_GONG.indexOf(hourDz) >= 0;
+    var shunNi = isYangHour ? (gender==="男"?"顺":"逆") : (gender==="男"?"逆":"顺");
+    var idx = hourIdx;
+    if (shunNi==="顺") idx = (idx + lunarMonth - 1) % 12;
+    else idx = (idx - lunarMonth + 1 + 120) % 12;
+    var shengYueGong = idx;
+    if (shunNi==="顺") idx = (shengYueGong - hourIdx + 12) % 12;
+    else idx = (shengYueGong + hourIdx) % 12;
+    mingGong = DIZHI[idx];
+    isYangMing = YANG_GONG.indexOf(mingGong) >= 0;
+    var shenShunNi = isYangMing ? "顺" : "逆";
+    var sIdx = DIZHI.indexOf(mingGong);
+    if (shenShunNi==="顺") sIdx = (sIdx + lunarMonth - 1) % 12;
+    else sIdx = (sIdx - lunarMonth + 1 + 120) % 12;
+    var shengYueGong2 = sIdx;
+    if (shenShunNi==="顺") sIdx = (shengYueGong2 + lunarDay - 1) % 12;
+    else sIdx = (shengYueGong2 - lunarDay + 1 + 120) % 12;
+    var shengRiGong = sIdx;
+    if (shenShunNi==="顺") sIdx = (shengRiGong - hourIdx + 12) % 12;
+    else sIdx = (shengRiGong + hourIdx) % 12;
+    shenGong = DIZHI[sIdx];
+    var startDz = "寅";
+    if (XISHU[hourWuxing]) {
+      for (var k=0; k<XISHU[hourWuxing].length; k++) {
+        var item = XISHU[hourWuxing][k];
+        if (lunarDay >= item[0] && lunarDay <= item[1]) { startDz = item[2]; break; }
+      }
+    }
+    var startIdx = DIZHI.indexOf(startDz);
+    var taijiIdx = (startIdx + ju - 1) % 12;
+    taijiGong = DIZHI[taijiIdx];
+    tiankuGong = ZIWEI_TIANFU[taijiGong];
+    palaces = {};
+    for (var j=0; j<DIZHI.length; j++) palaces[DIZHI[j]] = [];
+    getPalace(palaces, taijiGong).push("太极");
+    getPalace(palaces, tiankuGong).push("天库");
+    var taijiI = DIZHI.indexOf(taijiGong);
+    var tiankuI = DIZHI.indexOf(tiankuGong);
+    getPalace(palaces, DIZHI[(taijiI-1+12)%12]).push("天驿");
+    getPalace(palaces, DIZHI[(taijiI-3+12)%12]).push("太常");
+    getPalace(palaces, DIZHI[(taijiI-4+12)%12]).push("天雷");
+    getPalace(palaces, DIZHI[(taijiI-5+12)%12]).push("凤皇");
+    getPalace(palaces, DIZHI[(taijiI-8+12)%12]).push("天暴");
+    getPalace(palaces, DIZHI[(tiankuI+1)%12]).push("天医");
+    getPalace(palaces, DIZHI[(tiankuI+2)%12]).push("严蛇");
+    getPalace(palaces, DIZHI[(tiankuI+3)%12]).push("白衣");
+    getPalace(palaces, DIZHI[(tiankuI+4)%12]).push("天相");
+    getPalace(palaces, DIZHI[(tiankuI+5)%12]).push("进神");
+    getPalace(palaces, DIZHI[(tiankuI+6)%12]).push("暗金");
+    getPalace(palaces, DIZHI[(tiankuI+10)%12]).push("五鬼");
+    getPalace(palaces, DIZHI[(4+hourIdx)%12]).push("龙池");
+    getPalace(palaces, DIZHI[(10-hourIdx+12)%12]).push("凤阁");
+    getPalace(palaces, DIZHI[(4+(lunarMonth-1)+(lunarDay-1))%12]).push("左辅");
+    getPalace(palaces, DIZHI[(10-(lunarMonth-1)-(lunarDay-1)+1200)%12]).push("右弼");
+    getPalace(palaces, DIZHI[(4+(lunarMonth-1)+hourIdx)%12]).push("天罗");
+    getPalace(palaces, DIZHI[(10-(lunarMonth-1)-hourIdx+1200)%12]).push("地网");
+    var yearIdx = DIZHI.indexOf(yearDz);
+    getPalace(palaces, DIZHI[(yearIdx+2)%12]).push("丧门");
+    getPalace(palaces, DIZHI[(yearIdx-2+12)%12]).push("吊客");
+    var group = getSanheGroup(yearDz);
+    if (group) {
+      var mapData = HUOXING_LINGXING_MAP[group];
+      for (var star in mapData) getPalace(palaces, mapData[star]).push(star);
+    }
+    var yongDz = YONGJIANG_MONTH[lunarMonth];
+    if (yongDz) getPalace(palaces, yongDz).push("勇将");
+    var kuiYue = KUAYUE_MAP[yearTg];
+    if (kuiYue) {
+      getPalace(palaces, kuiYue[0]).push("天魁");
+      getPalace(palaces, kuiYue[1]).push("天钺");
+    }
+    var luDz = LUCUN_MAP[yearTg];
+    if (luDz) {
+      getPalace(palaces, luDz).push("正禄");
+      var luI = DIZHI.indexOf(luDz);
+      getPalace(palaces, DIZHI[(luI+1)%12]).push("扫火");
+      getPalace(palaces, DIZHI[(luI-1+12)%12]).push("烈神");
+    }
+    var waiJuShun = isYangMing ? (gender==="男") : (gender==="男" ? false : true);
+    var yinIdx = DIZHI.indexOf("寅");
+    var wenGuiIdx;
+    if (waiJuShun) wenGuiIdx = (yinIdx + ju - 1) % 12;
+    else wenGuiIdx = (yinIdx - ju + 1 + 120) % 12;
+    waiJuText = {};
+    for (var wi=0; wi<12; wi++) {
+      var wDz = DIZHI[(wenGuiIdx + (waiJuShun ? wi : -wi) + 120) % 12];
+      waiJuText[wDz] = WAIJU_STARS[wi];
+    }
+    daXianShun = (isYangMing && gender==="男") || (!isYangMing && gender==="女");
+    daXianText = {}; daXianData = [];
+    var daXianIdx = DIZHI.indexOf(mingGong);
+    var daXianStart = ju;
+    for (var i=0; i<12; i++) {
+      var dz = DIZHI[daXianIdx];
+      daXianText[dz] = daXianStart + "~" + (daXianStart+9);
+      daXianData.push({dz:dz, start:daXianStart, end:daXianStart+9});
+      daXianStart += 10;
+      if (daXianShun) daXianIdx = (daXianIdx+1)%12; else daXianIdx = (daXianIdx-1+12)%12;
+    }
+    var xxStartDz = "";
+    if (group==="寅午戌") xxStartDz="辰";
+    else if (group==="申子辰") xxStartDz="戌";
+    else if (group==="巳酉丑") xxStartDz="未";
+    else if (group==="亥卯未") xxStartDz="丑";
+    var xxShun = !daXianShun;
+    xiaoXianText = {};
+    var xxIdx = DIZHI.indexOf(xxStartDz);
+    for (var age=1; age<=12; age++) {
+      xiaoXianText[DIZHI[xxIdx]] = age + "岁";
+      if (xxShun) xxIdx = (xxIdx+1)%12; else xxIdx = (xxIdx-1+12)%12;
+    }
+    var yearWuxing = getWuxing(yearGZ);
+    var csStart = "";
+    if (yearWuxing==="火") csStart="寅";
+    else if (yearWuxing==="金") csStart="巳";
+    else if (yearWuxing==="木") csStart="亥";
+    else if (yearWuxing==="水"||yearWuxing==="土") csStart="申";
+    var csNames = ["长生","沐浴","冠带","临官","帝旺","衰","病","死","墓","绝","胎","养"];
+    csText = {};
+    var csIdx = DIZHI.indexOf(csStart);
+    for (var i=0; i<12; i++) csText[DIZHI[(csIdx+i)%12]] = csNames[i];
+    var yinGan2 = getYinGan(yearTg);
+    var yinGanIdx2 = TIANGAN.indexOf(yinGan2);
+    var yinIdx2 = DIZHI.indexOf("寅");
+    gongGan = {};
+    for (var gi=0; gi<12; gi++) {
+      var gzIdx = (yinIdx2 + gi) % 12;
+      var gtgIdx = (yinGanIdx2 + gi) % 10;
+      gongGan[DIZHI[gzIdx]] = TIANGAN[gtgIdx];
+    }
+    var maQianShen = ["驿马","六害","华盖","劫杀","灾杀","天杀","地杀","年杀","月杀","亡神","将星","攀鞍"];
+    maQianText = {};
+    if (group) {
+      var tianMaDz = HUOXING_LINGXING_MAP[group]["天马"];
+      var tmIdx = DIZHI.indexOf(tianMaDz);
+      for (var i=0; i<maQianShen.length; i++) {
+        var dz2 = DIZHI[(tmIdx+i)%12];
+        if (!maQianText[dz2]) maQianText[dz2] = [];
+        maQianText[dz2].push(maQianShen[i]);
+      }
+    }
+    juUsed = ju; juNameUsed = juName;
+  }
+
+  PAN_DATA = {
+    yearGZ:yearGZ, monthGZ:monthGZ, dayGZ:dayGZ, hourGZ:hourGZ,
+    yearTg:yearTg, yearDz:yearDz, hourDz:hourDz, hourIdx:hourIdx,
+    hourWuxing:hourWuxing, ju:juUsed, juName:juNameUsed,
+    mingGong:mingGong, shenGong:shenGong,
+    taijiGong:taijiGong, tiankuGong:tiankuGong,
+    palaces:palaces, sihua:sihua, waiJuText:waiJuText,
+    daXianText:daXianText, daXianData:daXianData,
+    xiaoXianText:xiaoXianText, csText:csText,
+    gongGan:gongGan, maQianText:maQianText,
+    gender:gender, lunarMonth:lunarMonth, lunarDay:lunarDay,
+    daXianShun:daXianShun, birthYear:birthYear,
+    inputYear:inputYear, inputMonth:inputMonth, inputDay:inputDay,
+    inputHour:inputHour, inputMinute:inputMinute,
+    calendarType:calendarType, panType:PAN_TYPE
+  };
+  CURRENT_FEIHUA_GONG = null; CURRENT_DAXIAN_INDEX = 0; CURRENT_LIUNIAN_AGE = null;
+  renderPan();
+}
+
+function paipanZiwei(lunarMonth, lunarDay, hourIdx, yearGan, yearZhi, juFallback) {
+  var palaces = {};
+  for (var i=0; i<12; i++) palaces[DIZHI[i]] = [];
+  var mingIdx = ((2 + lunarMonth - 1) - hourIdx + 120) % 12;
+  var mingGong = DIZHI[mingIdx];
+  var shenIdx = (2 + lunarMonth - 1 + hourIdx) % 12;
+  var shenGong = DIZHI[shenIdx];
+  var yinGan = getYinGan(yearGan);
+  var yinGanIdx = TIANGAN.indexOf(yinGan);
+  var gongGan = {};
+  for (var gi=0; gi<12; gi++) gongGan[DIZHI[(2+gi)%12]] = TIANGAN[(yinGanIdx+gi)%10];
+  var mingGZ = gongGan[mingGong] + mingGong;
+  var mingWuxing = getWuxing(mingGZ);
+  var ju = WUXING_JU[mingWuxing] || juFallback;
+  var ziweiDz = calcZiweiDz(lunarDay, ju);
+  var ziweiIdx = DIZHI.indexOf(ziweiDz);
+  var tianfuIdx = (4 - ziweiIdx + 120) % 12;
+  var tianfuDz = DIZHI[tianfuIdx];
+  for (var i=0; i<ZIWEI_SERIES.length; i++) {
+    palaces[DIZHI[(ziweiIdx + ZIWEI_OFFSETS[i] + 120) % 12]].push(ZIWEI_SERIES[i]);
+  }
+  for (var i=0; i<TIANFU_SERIES.length; i++) {
+    palaces[DIZHI[(tianfuIdx + TIANFU_OFFSETS[i] + 120) % 12]].push(TIANFU_SERIES[i]);
+  }
+  palaces[DIZHI[(4 + lunarMonth - 1) % 12]].push("左辅");
+  palaces[DIZHI[(10 - lunarMonth + 1 + 120) % 12]].push("右弼");
+  palaces[DIZHI[(10 - hourIdx + 120) % 12]].push("文昌");
+  palaces[DIZHI[(4 + hourIdx) % 12]].push("文曲");
+  var kuiYue = KUAYUE_MAP[yearGan];
+  if (kuiYue) {
+    palaces[kuiYue[0]].push("天魁");
+    palaces[kuiYue[1]].push("天钺");
+  }
+  var luDz = LUCUN_MAP[yearGan];
+  if (luDz) {
+    palaces[luDz].push("禄存");
+    var luI = DIZHI.indexOf(luDz);
+    palaces[DIZHI[(luI+1)%12]].push("擎羊");
+    palaces[DIZHI[(luI-1+12)%12]].push("陀罗");
+  }
+  var group = getSanheGroup(yearZhi);
+  if (group) {
+    palaces[DIZHI[(DIZHI.indexOf(ZW_HUO[group]) + hourIdx) % 12]].push("火星");
+    palaces[DIZHI[(DIZHI.indexOf(ZW_LING[group]) + hourIdx) % 12]].push("铃星");
+    palaces[ZW_MA[group]].push("天马");
+  }
+  palaces[DIZHI[(DIZHI.indexOf("酉") + lunarMonth - 1) % 12]].push("天刑");
+  palaces[DIZHI[(DIZHI.indexOf("丑") + lunarMonth - 1) % 12]].push("天姚");
+  var yearZhiIdx = DIZHI.indexOf(yearZhi);
+  var hongLuanIdx = (DIZHI.indexOf("卯") - yearZhiIdx + 120) % 12;
+  palaces[DIZHI[hongLuanIdx]].push("红鸾");
+  palaces[DIZHI[(hongLuanIdx + 6) % 12]].push("天喜");
+  return {
+    palaces: palaces,
+    mingGong: mingGong, shenGong: shenGong, ju: ju,
+    sihua: ZIWEI_SIHUA[yearGan] || {},
+    gongGan: gongGan,
+    ziweiGong: ziweiDz, tianfuGong: tianfuDz
+  };
+}
+
+function getLaiYinGong() {
+  var d = PAN_DATA; if (!d) return null;
+  var yearTg = d.yearTg;
+  var candidates = ["寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+  for (var i=0; i<candidates.length; i++) if (d.gongGan[candidates[i]] === yearTg) return candidates[i];
+  return null;
+}
+function getLiuNianGong(age) {
+  var d = PAN_DATA; if (!d) return null;
+  var birthIdx = DIZHI.indexOf(d.yearDz);
+  return DIZHI[(birthIdx + age - 1) % 12];
+}
+function getXiaoXianGong(age) {
+  var d = PAN_DATA; if (!d) return null;
+  var group = getSanheGroup(d.yearDz);
+  var startDz;
+  if (group==="寅午戌") startDz="辰";
+  else if (group==="申子辰") startDz="戌";
+  else if (group==="巳酉丑") startDz="未";
+  else if (group==="亥卯未") startDz="丑";
+  else return null;
+  var startIdx = DIZHI.indexOf(startDz);
+  var xxShun;
+  if (d.panType === "ziwei") {
+    xxShun = (d.gender === "男");
+  } else {
+    xxShun = !d.daXianShun;
+  }
+  var step = age - 1;
+  if (xxShun) return DIZHI[(startIdx + step) % 12];
+  return DIZHI[(startIdx - step + 1200) % 12];
+}
+function getDaXianYears() {
+  var d = PAN_DATA; if (!d) return {};
+  var result = {};
+  var curDx = d.daXianData[CURRENT_DAXIAN_INDEX];
+  for (var age=curDx.start; age<=curDx.end; age++) {
+    result[getLiuNianGong(age)] = {age:age, year:d.birthYear + age - 1};
+  }
+  return result;
+}
+function getFeihuaColors() {
+  var result = {};
+  if (!CURRENT_FEIHUA_GONG || !PAN_DATA) return result;
+  var gGan = PAN_DATA.gongGan[CURRENT_FEIHUA_GONG];
+  if (!gGan) return result;
+  var sh = getActiveGongSihuaTable()[gGan];
+  if (!sh) return result;
+  for (var type in sh) {
+    var stars = toArr(sh[type]);
+    var cls = "feihua-" + SIHUA_CLS[type];
+    for (var i=0; i<stars.length; i++) {
+      var star = stars[i];
+      if (result[star]) {
+        if (SIHUA_PRIORITY[cls] > SIHUA_PRIORITY[result[star]]) result[star] = cls;
+      } else result[star] = cls;
+    }
+  }
+  return result;
+}
+function getZiHuaMap() {
+  var result = {};
+  if (!PAN_DATA) return result;
+  var table = getActiveGongSihuaTable();
+  for (var i=0; i<DIZHI.length; i++) {
+    var dz = DIZHI[i];
+    var gGan = PAN_DATA.gongGan[dz];
+    if (!gGan) continue;
+    var sh = table[gGan];
+    if (!sh) continue;
+    var palaceStars = PAN_DATA.palaces[dz];
+    for (var type in sh) {
+      var stars = toArr(sh[type]);
+      for (var si=0; si<stars.length; si++) {
+        if (palaceStars.indexOf(stars[si]) >= 0) {
+          if (!result[dz]) result[dz] = {};
+          if (!result[dz][stars[si]]) result[dz][stars[si]] = [];
+          result[dz][stars[si]].push(type);
+        }
+      }
+    }
+  }
+  return result;
+}
+
+function renderPan() {
+  var d = PAN_DATA; if (!d) return;
+  var feihuaColors = getFeihuaColors();
+  var daXianYears = getDaXianYears();
+  var laiYinGong = getLaiYinGong();
+
+  var mingIdx = DIZHI.indexOf(d.mingGong);
+  var currentPalaceName = {};
+  for (var i=0; i<12; i++) currentPalaceName[DIZHI[(mingIdx-i+120)%12]] = GONG_NAMES[i];
+
+  var daXianGong = d.daXianData[CURRENT_DAXIAN_INDEX].dz;
+  var daXianIdx2 = DIZHI.indexOf(daXianGong);
+  var daXianNameMap = {};
+  for (var i=0; i<12; i++) daXianNameMap[DIZHI[(daXianIdx2-i+120)%12]] = "大" + GONG_SHORT_DA[i];
+
+  var liuNianNameMap = {};
+  if (CURRENT_LIUNIAN_AGE !== null) {
+    var lnMingDz = getLiuNianGong(CURRENT_LIUNIAN_AGE);
+    var lnMingIdx = DIZHI.indexOf(lnMingDz);
+    for (var i=0; i<12; i++) liuNianNameMap[DIZHI[(lnMingIdx-i+120)%12]] = GONG_NAMES_LN[i];
+  }
+  var xiaoXianNameMap = {};
+  if (CURRENT_LIUNIAN_AGE !== null) {
+    var xxMingDz = getXiaoXianGong(CURRENT_LIUNIAN_AGE);
+    if (xxMingDz) {
+      var xxMingIdx = DIZHI.indexOf(xxMingDz);
+      for (var i=0; i<12; i++) xiaoXianNameMap[DIZHI[(xxMingIdx-i+120)%12]] = GONG_NAMES_XX[i];
+    }
+  }
+
+  var gridPos = {"巳":[0,0],"午":[0,1],"未":[0,2],"申":[0,3],"辰":[1,0],"酉":[1,3],"卯":[2,0],"戌":[2,3],"寅":[3,0],"丑":[3,1],"子":[3,2],"亥":[3,3]};
+
+  var cellContents = {};
+  for (var dd=0; dd<DIZHI.length; dd++) {
+    var dz = DIZHI[dd];
+    var rawStars = d.palaces[dz];
+    var starHtml = "";
+    for (var si=0; si<rawStars.length; si++) {
+      var s = rawStars[si];
+      var display = isZiwei() ? s : (NAME_MAP[s] || s);
+      var cls = KEY_STARS.indexOf(s) >= 0 ? "star-key" : "star-name";
+      var extraCls = feihuaColors[s] ? " " + feihuaColors[s] : "";
+      var shArr = toArr(d.sihua[s]);
+      var sihuaMark = '';
+      for (var hi=0; hi<shArr.length; hi++) {
+        var t = shArr[hi];
+        var label = getSihuaLabelWithContext(d.yearTg, s, t);
+        sihuaMark += '<span class="sihua sihua-' + SIHUA_CLS[t] + '">' + label + '</span>';
+      }
+      var mw = getMiaoWang(s, dz);
+      var mwMark = mw ? '<span class="' + getMiaoWangClass(mw) + '">' + mw + '</span>' : '';
+      starHtml += '<span class="star-group" data-star="' + s + '"><span class="' + cls + extraCls + '">' + display + '</span>' + mwMark + sihuaMark + '</span>';
+    }
+    var infoStarsHtml = '';
+    if (d.waiJuText && d.waiJuText[dz]) infoStarsHtml += '<span class="v-star waiju">' + d.waiJuText[dz] + '</span>';
+    if (d.maQianText && d.maQianText[dz]) {
+      for (var mi=0; mi<d.maQianText[dz].length; mi++) {
+        infoStarsHtml += '<span class="v-star maqian">' + d.maQianText[dz][mi] + '</span>';
+      }
+    }
+    var gongName = currentPalaceName[dz] || "";
+    var csTextDz = d.csText[dz] || "";
+    var tgTextDz = d.gongGan[dz] || "";
+    var daXianName = daXianNameMap[dz] || "";
+    var daXianAge = d.daXianText[dz] || "";
+    var shenMark = (dz===d.shenGong) ? "身宫" : "";
+    var laiYinMark = (dz===laiYinGong) ? "来因" : "";
+
+    var zihuaTagRowHtml = renderZihuaTags(dz);
+    var zihuaTagRowTop = '';
+    var zihuaTagRowBottom = '';
+    if (zihuaTagRowHtml) {
+      if (GROUP_TOP.indexOf(dz) >= 0) zihuaTagRowTop = zihuaTagRowHtml;
+      else zihuaTagRowBottom = zihuaTagRowHtml;
+    }
+
+    var labelHtml = '';
+    if (CURRENT_LIUNIAN_AGE !== null) {
+      var xxLabel = xiaoXianNameMap[dz] || "";
+      var nmLabel = liuNianNameMap[dz] || "";
+      labelHtml = '<div class="liunian-label">' +
+                    (xxLabel ? '<div class="xx-line">' + xxLabel + '</div>' : '') +
+                    (nmLabel ? '<div class="nm-line">' + nmLabel + '</div>' : '') + '</div>';
+    } else {
+      var dxLabel = daXianYears[dz] ? (daXianYears[dz].age + "岁 " + daXianYears[dz].year + "年") : "";
+      labelHtml = '<div class="liunian-label">' +
+                    (dxLabel ? '<div class="nm-line">' + dxLabel + '</div>' : '') + '</div>';
+    }
+    var rightLabels = '<div class="right-labels">' +
+                        (shenMark ? '<div class="sheng-line">' + shenMark + '</div>' : '') +
+                        (laiYinMark ? '<div class="laiyin-line">' + laiYinMark + '</div>' : '') + '</div>';
+
+    var topLineRow = '<div class="top-line-row">' +
+                       '<div class="changsheng-line">' + csTextDz + '</div>' +
+                       labelHtml + rightLabels + '</div>';
+
+    var bottomBar = zihuaTagRowBottom + topLineRow +
+                    '<div class="bottom-bar">' +
+                     '<div class="left-stack"><div class="tiangan">' + tgTextDz + '</div><div class="dizhi">' + dz + '</div></div>' +
+                     '<div class="center-info">' +
+                       '<div class="center-top"><div class="daxian-name">' + daXianName + '</div></div>' +
+                       '<div class="center-divider"></div>' +
+                       '<div class="age-range">' + daXianAge + '</div>' +
+                     '</div>' +
+                     '<div class="right-vertical"><div class="gong-name-vertical">' + gongName + '</div></div>' +
+                     '</div>';
+    cellContents[dz] = zihuaTagRowTop + '<div class="stars">' + starHtml + infoStarsHtml + '</div>' + bottomBar;
+  }
+
+  var sihuaLines = [];
+  for (var st in d.sihua) {
+    var shArr2 = toArr(d.sihua[st]);
+    if (shArr2.length === 0) continue;
+    var nm = isZiwei() ? st : (NAME_MAP[st] || st);
+    var labels = [];
+    for (var li=0; li<shArr2.length; li++) {
+      labels.push(getSihuaLabelWithContext(d.yearTg, st, shArr2[li]));
+    }
+    sihuaLines.push(nm + "化" + labels.join("、"));
+  }
+  var hourStr = (d.inputHour<10?'0':'') + d.inputHour + ':' + (d.inputMinute<10?'0':'') + d.inputMinute;
+
+  var panName = isZiwei() ? "紫微斗数" : (isSix() ? "中天六化" : "中天太极");
+  var centerHtml = '<h2>命主信息（' + panName + '）</h2>' +
+                   '<p><b>四柱：</b>' + d.yearGZ + ' ' + d.monthGZ + ' ' + d.dayGZ + ' ' + d.hourGZ + '</p>' +
+                   '<p><b>出生：</b>' + d.inputYear + '年' + d.inputMonth + '月' + d.inputDay + '日 ' + hourStr + '（' + (d.calendarType==='solar'?'公历':'农历') + '）</p>' +
+                   '<p><b>农历：</b>' + d.lunarMonth + '月' + d.lunarDay + '日</p>' +
+                   '<p><b>生时纳音：</b>' + (NAYIN[d.hourGZ]||"") + '（' + d.hourWuxing + '）</p>' +
+                   '<p><b>五行局：</b>' + d.juName + '</p>' +
+                   '<p><b>命宫：</b>' + d.mingGong + '　<b>身宫：</b>' + d.shenGong + '　<b>来因：</b>' + (laiYinGong||"") + '</p>' +
+                   '<p><b>紫微：</b>' + d.taijiGong + '　<b>天府：</b>' + d.tiankuGong + '</p>' +
+                   '<p><b>' + (isSix() ? "生年六化" : "生年四化") + '：</b>' + sihuaLines.join('　') + '</p>';
+
+  var html = '<div class="pan-wrap">';
+  html += '<svg class="zihua-svg" id="zihuaSvg" preserveAspectRatio="none"></svg>';
+  html += '<div class="pan-grid" id="panGrid">';
+  for (var r=0; r<4; r++) {
+    for (var c=0; c<4; c++) {
+      if (r>=1 && r<=2 && c>=1 && c<=2) {
+        if (r===1 && c===1) html += '<div class="cell-center">' + centerHtml + '</div>';
+        continue;
+      }
+      var foundDz = null;
+      for (var key in gridPos) {
+        if (gridPos[key][0]===r && gridPos[key][1]===c) { foundDz = key; break; }
+      }
+      if (foundDz) {
+        var activeCls = (foundDz===CURRENT_FEIHUA_GONG) ? " active-gong" : "";
+        html += '<div class="cell' + activeCls + '" id="cell-' + foundDz + '" onclick="clickGong(\'' + foundDz + '\')">' + (cellContents[foundDz]||"空") + '</div>';
+      } else {
+        html += '<div class="cell"></div>';
+      }
+    }
+  }
+  html += '</div></div>';
+
+  var legendHtml = '<span>点击宫位查看飞化：</span>';
+  if (isSix()) {
+    legendHtml += '<span class="ke">科</span><span class="kui">魁</span><span class="lu">禄</span><span class="quan">权</span><span class="fu">福</span><span class="huo">祸</span>';
+  } else {
+    legendHtml += '<span class="lu">禄</span><span class="quan">权</span><span class="ke">科</span><span class="ji">忌</span>';
+  }
+  legendHtml += '<span style="margin-left:15px;color:#666;font-weight:normal;">点击流年框切换年命；紫字=小限；红框=来因</span>';
+  legendHtml += (CURRENT_LIUNIAN_AGE !== null ? '　<b>流年：' + CURRENT_LIUNIAN_AGE + '岁，小限在' + getXiaoXianGong(CURRENT_LIUNIAN_AGE) + '宫，年命在' + getLiuNianGong(CURRENT_LIUNIAN_AGE) + '宫</b>' : '');
+  legendHtml += (CURRENT_FEIHUA_GONG ? '　<b>飞化：' + CURRENT_FEIHUA_GONG + '宫</b>' : '');
+  html += '<div class="feihua-legend">' + legendHtml + '</div>';
+
+  html += buildTimeline();
+  document.getElementById("result").innerHTML = html;
+  setTimeout(function() {
+    drawArrows();
+    positionZihuaTags();
+  }, 50);
+}
+
+function positionZihuaTags() {
+  var allDz = GROUP_BOTTOM.concat(GROUP_TOP);
+  for (var i=0; i<allDz.length; i++) {
+    var dz = allDz[i];
+    var cell = document.getElementById("cell-" + dz);
+    if (!cell) continue;
+    var row = cell.querySelector(".zihua-tag-row");
+    if (!row) continue;
+    var cellRect = cell.getBoundingClientRect();
+    var tags = row.querySelectorAll(".sihua");
+    if (tags.length === 0) continue;
+    var usedX = {};
+    for (var j=0; j<tags.length; j++) {
+      var tag = tags[j];
+      var starName = tag.getAttribute("data-zstar");
+      if (!starName) continue;
+      var starEl = cell.querySelector('.star-group[data-star="' + starName + '"]');
+      if (!starEl) continue;
+      var sr = starEl.getBoundingClientRect();
+      var cx = sr.left - cellRect.left + sr.width / 2;
+      var leftPx = Math.round(cx + 3);
+      while (usedX[leftPx]) leftPx += 22;
+      usedX[leftPx] = true;
+      tag.style.left = leftPx + "px";
+    }
+  }
+}
+
+function clickGong(dz) {
+  if (CURRENT_FEIHUA_GONG === dz) CURRENT_FEIHUA_GONG = null;
+  else CURRENT_FEIHUA_GONG = dz;
+  renderPan();
+}
+function clickLiuNian(age) {
+  if (CURRENT_LIUNIAN_AGE === age) CURRENT_LIUNIAN_AGE = null;
+  else CURRENT_LIUNIAN_AGE = age;
+  renderPan();
+}
+function switchDaXian(i) { CURRENT_DAXIAN_INDEX = i; CURRENT_LIUNIAN_AGE = null; renderPan(); }
+function switchPanType(t) {
+  PAN_TYPE = t;
+  document.getElementById("btn-zhtj").classList.toggle("active", t==="zhongtian");
+  document.getElementById("btn-zhtj6").classList.toggle("active", t==="zhongtian6");
+  document.getElementById("btn-ziwei").classList.toggle("active", t==="ziwei");
+  paipan();
+}
+
+function getAnchorPoint(dz) {
+  var cell = document.getElementById("cell-" + dz);
+  var panGrid = document.getElementById("panGrid");
+  if (!cell || !panGrid) return null;
+  var r = cell.getBoundingClientRect();
+  var gridR = panGrid.getBoundingClientRect();
+  var left = r.left - gridR.left, top = r.top - gridR.top;
+  return {left:left, top:top, right:left+r.width, bottom:top+r.height, cx:left+r.width/2, cy:top+r.height/2};
+}
+function getLinePoints(dz, targetDz) {
+  var a = getAnchorPoint(dz), b = getAnchorPoint(targetDz);
+  if (!a || !b) return null;
+  var dx = b.cx - a.cx, dy = b.cy - a.cy;
+  if (CORNER_PAIRS[dz]) {
+    return {x1:(dx>0?a.right:a.left), y1:(dy>0?a.bottom:a.top), x2:(dx>0?b.left:b.right), y2:(dy>0?b.top:b.bottom)};
+  } else {
+    if (Math.abs(dy) > Math.abs(dx)) return {x1:a.cx, y1:(dy>0?a.bottom:a.top), x2:b.cx, y2:(dy>0?b.top:b.bottom)};
+    return {x1:(dx>0?a.right:a.left), y1:a.cy, x2:(dx>0?b.left:b.right), y2:b.cy};
+  }
+}
+
+function drawArrows() {
+  var svg = document.getElementById("zihuaSvg");
+  var panGrid = document.getElementById("panGrid");
+  if (!svg || !panGrid) return;
+  var gridRect = panGrid.getBoundingClientRect();
+  var w = gridRect.width, h = gridRect.height;
+  svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+  svg.style.width = w + "px"; svg.style.height = h + "px";
+  var outDist = 38;
+  var svgHtml = '<defs>' +
+    '<marker id="zh-arrow-lu" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#28a745"/></marker>' +
+    '<marker id="zh-arrow-quan" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#8e44ad"/></marker>' +
+    '<marker id="zh-arrow-ke" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#007bff"/></marker>' +
+    '<marker id="zh-arrow-ji" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#dc3545"/></marker>' +
+    '<marker id="zh-arrow-kui" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#17a2b8"/></marker>' +
+    '<marker id="zh-arrow-fu" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#ff9800"/></marker>' +
+    '<marker id="zh-arrow-huo" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#dc3545"/></marker>' +
+    '</defs>';
+
+  var zihuaMap = getZiHuaMap();
+  for (var dz in zihuaMap) {
+    var cell = document.getElementById("cell-" + dz);
+    if (!cell) continue;
+    var thisGongGan = PAN_DATA.gongGan[dz];
+    var inCellLabel = isZihuaLabelInCell(dz);
+    for (var star in zihuaMap[dz]) {
+      var types = zihuaMap[dz][star];
+      var starGroup = cell.querySelector('.star-group[data-star="' + star + '"]');
+      if (!starGroup) continue;
+      var sgRect = starGroup.getBoundingClientRect();
+      var sx = sgRect.left - gridRect.left + sgRect.width / 2;
+      var syTop = sgRect.top - gridRect.top;
+      var syBottom = sgRect.bottom - gridRect.top;
+      for (var ti=0; ti<types.length; ti++) {
+        var type = types[ti];
+        var label = getSihuaLabelWithContext(thisGongGan, star, type);
+        var color = SIHUA_COLOR[type];
+        var marker = "zh-arrow-" + SIHUA_CLS[type];
+        var path = "", labelX = 0, labelY = 0;
+        var offsetY = ti * 16;
+        if (GROUP_BOTTOM.indexOf(dz)>=0) {
+          var syB2 = syBottom + offsetY;
+          path = "M" + sx + " " + syB2 + " L" + sx + " " + (h+outDist+offsetY);
+          labelX = sx + 6;
+          labelY = h + 12 + offsetY;
+        } else if (GROUP_LEFT.indexOf(dz)>=0) {
+          var ey = syBottom + 20 + offsetY;
+          path = "M" + sx + " " + (syBottom + offsetY) + " L" + sx + " " + ey + " L" + (-outDist) + " " + ey;
+          labelX = sx + 5; labelY = syBottom + 12 + offsetY;
+        } else if (GROUP_RIGHT.indexOf(dz)>=0) {
+          var ey = syBottom + 20 + offsetY;
+          path = "M" + sx + " " + (syBottom + offsetY) + " L" + sx + " " + ey + " L" + (w+outDist) + " " + ey;
+          labelX = sx + 5; labelY = syBottom + 12 + offsetY;
+        } else if (GROUP_TOP.indexOf(dz)>=0) {
+          var syT2 = syTop - offsetY;
+          path = "M" + sx + " " + syT2 + " L" + sx + " " + (-outDist - offsetY);
+          labelX = sx + 5; labelY = syT2 - 3;
+        }
+        if (path) {
+          svgHtml += '<path d="' + path + '" stroke="' + color + '" stroke-width="2" fill="none" marker-end="url(#' + marker + ')"/>';
+          if (!inCellLabel) {
+            svgHtml += '<text x="' + labelX + '" y="' + labelY + '" fill="' + color + '" font-size="13" font-weight="bold" font-family="Microsoft YaHei, Arial">' + label + '</text>';
+          }
+        }
+      }
+    }
+  }
+
+  for (var i=0; i<DIZHI.length; i++) {
+    var dz2 = DIZHI[i];
+    var duiDz = DUI_GONG[dz2];
+    if (!duiDz) continue;
+    var gGan = PAN_DATA.gongGan[dz2];
+    if (!gGan) continue;
+    var sh = getActiveGongSihuaTable()[gGan];
+    if (!sh) continue;
+    var matched = [];
+    for (var type2 in sh) {
+      var targets = toArr(sh[type2]);
+      for (var ti2=0; ti2<targets.length; ti2++) {
+        if (PAN_DATA.palaces[duiDz].indexOf(targets[ti2]) >= 0) {
+          matched.push({type: type2, star: targets[ti2]});
+        }
+      }
+    }
+    if (matched.length === 0) continue;
+    var pts = getLinePoints(dz2, duiDz);
+    if (!pts) continue;
+    var dx = pts.x2 - pts.x1, dy = pts.y2 - pts.y1;
+    var len = Math.sqrt(dx*dx + dy*dy);
+    if (len === 0) continue;
+    var rx = -dy/len, ry = dx/len;
+    var t = 0.92;
+    for (var k=0; k<matched.length; k++) {
+      var type3 = matched[k].type;
+      var star3 = matched[k].star;
+      var label3 = getSihuaLabelWithContext(gGan, star3, type3);
+      var normalOffset = (k - (matched.length-1)/2) * 14;
+      var bx = pts.x1 + rx * normalOffset;
+      var by = pts.y1 + ry * normalOffset;
+      var ex3 = pts.x2 + rx * normalOffset;
+      var ey3 = pts.y2 + ry * normalOffset;
+      var px = bx + (ex3 - bx) * t;
+      var py = by + (ey3 - by) * t;
+      var lx = px + rx * 14;
+      var ly = py + ry * 14;
+      var color2 = SIHUA_COLOR[type3];
+      var marker2 = "zh-arrow-" + SIHUA_CLS[type3];
+      svgHtml += '<line x1="' + bx + '" y1="' + by + '" x2="' + ex3 + '" y2="' + ey3 + '" stroke="' + color2 + '" stroke-width="2" marker-end="url(#' + marker2 + ')" opacity="0.85"/>';
+      svgHtml += '<text x="' + lx + '" y="' + ly + '" fill="' + color2 + '" font-size="13" font-weight="bold" font-family="Microsoft YaHei, Arial">' + label3 + '</text>';
+    }
+  }
+  svg.innerHTML = svgHtml;
+}
+
+function buildTimeline() {
+  var d = PAN_DATA;
+  var html = '<div class="timeline">';
+  html += '<div class="timeline-row"><div class="timeline-label">大限</div><div class="timeline-cells">';
+  for (var i=0; i<d.daXianData.length; i++) {
+    var dd = d.daXianData[i];
+    var gz = d.gongGan[dd.dz] + dd.dz;
+    var active = (i===CURRENT_DAXIAN_INDEX) ? ' active' : '';
+    html += '<div class="timeline-cell' + active + '" onclick="switchDaXian(' + i + ')">' +
+              '<div class="age">' + dd.start + '~' + dd.end + '</div>' +
+              '<div class="gz">' + gz + '</div></div>';
+  }
+  html += '</div></div>';
+  var curDx = d.daXianData[CURRENT_DAXIAN_INDEX];
+  html += '<div class="timeline-row"><div class="timeline-label">流年</div><div class="timeline-cells">';
+  for (var age=curDx.start; age<=curDx.end; age++) {
+    var yr = d.birthYear + age - 1;
+    var lnActive = (age===CURRENT_LIUNIAN_AGE) ? ' ln-active' : '';
+    html += '<div class="timeline-cell' + lnActive + '" onclick="clickLiuNian(' + age + ')">' +
+              '<div class="age">' + age + '岁</div>' +
+              '<div class="gz">' + yr + '年</div></div>';
+  }
+  html += '</div></div></div>';
+  return html;
+}
+
+/* ============ 案例库 ============ */
+var DB_NAME = "zwds_db", DB_VERSION = 1, STORE_CASES = "cases";
+var _db = null, CASES_CACHE = [], CURRENT_CASE_ID = null;
+
+var GROUPS_KEY = "zwds_groups_v1";
+var GROUP_COUNT = 20;
+var GROUPS = (function() {
+  try {
+    var g = JSON.parse(localStorage.getItem(GROUPS_KEY) || "null");
+    if (Array.isArray(g) && g.length === GROUP_COUNT) return g;
+  } catch(e) {}
+  var arr = [];
+  for (var i=0; i<GROUP_COUNT; i++) arr.push("分组" + (i+1));
+  return arr;
+})();
+var CURRENT_GROUP_FILTER = -1;
+var CURRENT_SEARCH = "";
+
+function saveGroups() {
+  localStorage.setItem(GROUPS_KEY, JSON.stringify(GROUPS));
+}
+function initGroupSelect() {
+  var sel = document.getElementById("caseGroupSelect");
+  if (!sel) return;
+  var html = "";
+  for (var i=0; i<GROUP_COUNT; i++) {
+    html += '<option value="' + i + '">' + escHtml(GROUPS[i]) + '</option>';
+  }
+  sel.innerHTML = html;
+}
+function renderGroupTabs() {
+  var el = document.getElementById("groupTabs");
+  if (!el) return;
+  var counts = {};
+  for (var i=0; i<GROUP_COUNT; i++) counts[i] = 0;
+  var total = 0;
+  for (var k=0; k<CASES_CACHE.length; k++) {
+    var c = CASES_CACHE[k];
+    var g = (typeof c.group === "number" && c.group >= 0 && c.group < GROUP_COUNT) ? c.group : 0;
+    counts[g]++;
+    total++;
+  }
+  var html = '<div class="group-tab' + (CURRENT_GROUP_FILTER === -1 ? ' active' : '') + '" onclick="setGroupFilter(-1)">全部<span class="count">' + total + '</span></div>';
+  for (var i=0; i<GROUP_COUNT; i++) {
+    var cls = (CURRENT_GROUP_FILTER === i) ? ' active' : '';
+    html += '<div class="group-tab' + cls + '" onclick="setGroupFilter(' + i + ')">' + escHtml(GROUPS[i]) + '<span class="count">' + counts[i] + '</span></div>';
+  }
+  el.innerHTML = html;
+}
+function setGroupFilter(i) {
+  CURRENT_GROUP_FILTER = i;
+  renderGroupTabs();
+  renderCaseList();
+}
+function renderGroupMgr() {
+  var el = document.getElementById("groupMgrGrid");
+  if (!el) return;
+  var html = "";
+  for (var i=0; i<GROUP_COUNT; i++) {
+    html += '<div class="row"><label>' + (i+1) + '：</label><input type="text" value="' + escHtml(GROUPS[i]) + '" onchange="renameGroup(' + i + ', this.value)"></div>';
+  }
+  el.innerHTML = html;
+}
+function renameGroup(idx, val) {
+  var name = (val || "").trim();
+  if (!name) name = "分组" + (idx+1);
+  GROUPS[idx] = name;
+  saveGroups();
+  renderGroupTabs();
+  renderCaseList();
+  initGroupSelect();
+  renderGroupMgr();
+}
+function toggleGroupMgr() {
+  var p = document.getElementById("groupMgrPanel");
+  var isHidden = p.style.display === "none";
+  p.style.display = isHidden ? "block" : "none";
+  if (isHidden) renderGroupMgr();
+}
+function onSearchInput(val) {
+  CURRENT_SEARCH = (val || "").trim();
+  renderCaseList();
+}
+function clearSearch() {
+  document.getElementById("caseSearchInput").value = "";
+  CURRENT_SEARCH = "";
+  renderCaseList();
+}
+function highlightKeyword(text, kw) {
+  if (!kw) return escHtml(text);
+  var escaped = escHtml(text);
+  var re = new RegExp("(" + kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+  return escaped.replace(re, '<span class="search-hit">$1</span>');
+}
+
+function openDB() {
+  if (_db) return Promise.resolve(_db);
+  return new Promise(function(resolve, reject) {
+    var req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = function(e) {
+      var db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_CASES)) db.createObjectStore(STORE_CASES, {keyPath:"id"});
+    };
+    req.onsuccess = function(e) { _db = e.target.result; resolve(_db); };
+    req.onerror = function(e) { reject(e.target.error); };
+  });
+}
+function dbGetAllCases() {
+  return openDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var req = db.transaction(STORE_CASES, "readonly").objectStore(STORE_CASES).getAll();
+      req.onsuccess = function() {
+        var list = req.result || [];
+        list.sort(function(a,b){ return (b.updated_at||0)-(a.updated_at||0); });
+        resolve(list);
+      };
+      req.onerror = function() { reject(req.error); };
+    });
+  });
+}
+function dbPutCase(item) {
+  return openDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction(STORE_CASES, "readwrite");
+      tx.objectStore(STORE_CASES).put(item);
+      tx.oncomplete = function() { resolve(); };
+      tx.onerror = function() { reject(tx.error); };
+    });
+  });
+}
+function dbDeleteCase(id) {
+  return openDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction(STORE_CASES, "readwrite");
+      tx.objectStore(STORE_CASES).delete(id);
+      tx.oncomplete = function() { resolve(); };
+      tx.onerror = function() { reject(tx.error); };
+    });
+  });
+}
+function dbPutAllCases(list) {
+  return openDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction(STORE_CASES, "readwrite");
+      var store = tx.objectStore(STORE_CASES);
+      store.clear();
+      list.forEach(function(c) { store.put(c); });
+      tx.oncomplete = function() { resolve(); };
+      tx.onerror = function() { reject(tx.error); };
+    });
+  });
+}
+function loadCases() { return CASES_CACHE; }
+function refreshCache() { return dbGetAllCases().then(function(list) { CASES_CACHE = list; return list; }); }
+function migrateFromLocalStorage() {
+  var raw = localStorage.getItem("zwds_cases_v1");
+  if (!raw) return Promise.resolve(0);
+  var old; try { old = JSON.parse(raw); } catch(e) { return Promise.resolve(0); }
+  if (!Array.isArray(old) || old.length === 0) return Promise.resolve(0);
+  return dbGetAllCases().then(function(current) {
+    var existing = {};
+    current.forEach(function(c) { existing[c.id] = true; });
+    var toAdd = old.filter(function(c) { return c.id && !existing[c.id]; });
+    if (toAdd.length === 0) return 0;
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var tx = db.transaction(STORE_CASES, "readwrite");
+        var store = tx.objectStore(STORE_CASES);
+        toAdd.forEach(function(c) { if (typeof c.group !== "number") c.group = 0; store.put(c); });
+        tx.oncomplete = function() { resolve(toAdd.length); };
+        tx.onerror = function() { reject(tx.error); };
+      });
+    });
+  });
+}
+
+/* ===== Gist ===== */
+var GIST_KEY = "zwds_gist_v1";
+var GIST_CONFIG = (function() {
+  try {
+    var c = JSON.parse(localStorage.getItem(GIST_KEY) || "{}");
+    return {enabled:!!c.enabled, token:c.token||"", gistId:c.gistId||"", filename:c.filename||"zwds_cases.json", autoSync:c.autoSync!==false};
+  } catch(e) { return {enabled:false, token:"", gistId:"", filename:"zwds_cases.json", autoSync:true}; }
+})();
+function saveGistConfigToStorage() { localStorage.setItem(GIST_KEY, JSON.stringify(GIST_CONFIG)); }
+async function gistPush() {
+  if (!GIST_CONFIG.token) throw new Error("未配置 token");
+  var list = await dbGetAllCases();
+  var content = JSON.stringify({version:1, app:"zwds", exported_at:Date.now(), groups:GROUPS, cases:list}, null, 2);
+  var body = {description:"中天太极紫微数案例备份（自动生成）", files:{}};
+  body.files[GIST_CONFIG.filename] = {content:content};
+  var url, method;
+  if (GIST_CONFIG.gistId) { url = "https://api.github.com/gists/" + GIST_CONFIG.gistId; method = "PATCH"; }
+  else { url = "https://api.github.com/gists"; method = "POST"; body.public = false; }
+  var res = await fetch(url, {
+    method: method,
+    headers: {"Authorization":"Bearer " + GIST_CONFIG.token, "Accept":"application/vnd.github+json", "Content-Type":"application/json"},
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  var data = await res.json();
+  if (!GIST_CONFIG.gistId) { GIST_CONFIG.gistId = data.id; saveGistConfigToStorage(); }
+  return data;
+}
+async function gistPull() {
+  if (!GIST_CONFIG.token || !GIST_CONFIG.gistId) throw new Error("未配置 token 或 Gist ID");
+  var res = await fetch("https://api.github.com/gists/" + GIST_CONFIG.gistId, {
+    headers: {"Authorization":"Bearer " + GIST_CONFIG.token, "Accept":"application/vnd.github+json"}
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  var data = await res.json();
+  var f = data.files[GIST_CONFIG.filename];
+  if (!f) throw new Error("备份文件不存在");
+  var content = f.content;
+  if (f.truncated && f.raw_url) {
+    var raw = await fetch(f.raw_url, {headers:{"Authorization":"Bearer " + GIST_CONFIG.token}});
+    content = await raw.text();
+  }
+  var parsed = JSON.parse(content);
+  return {
+    cases: Array.isArray(parsed) ? parsed : (parsed.cases || []),
+    groups: (!Array.isArray(parsed) && parsed.groups) ? parsed.groups : null
+  };
+}
+function gistAutoSync() {
+  if (!GIST_CONFIG.enabled || !GIST_CONFIG.token || !GIST_CONFIG.autoSync) return;
+  gistPush().catch(function(e) { console.warn("Gist 同步失败", e); });
+}
+
+/* ===== 工具 ===== */
+function genId() { return "c_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8); }
+function pad2(n) { return (n<10?"0":"") + n; }
+function escHtml(s) {
+  return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function getCaseById(id) { for (var i=0; i<CASES_CACHE.length; i++) if (CASES_CACHE[i].id === id) return CASES_CACHE[i]; return null; }
+function collectInputs() {
+  return {
+    calendar_type: document.getElementById("calendarType").value,
+    year: parseInt(document.getElementById("inputYear").value),
+    month: parseInt(document.getElementById("inputMonth").value),
+    day: parseInt(document.getElementById("inputDay").value),
+    hour: parseInt(document.getElementById("inputHour").value),
+    minute: parseInt(document.getElementById("inputMinute").value) || 0,
+    gender: document.getElementById("gender").value
+  };
+}
+function autoName(c) {
+  return (c.calendar_type==="solar"?"公":"农") + c.year + "-" + pad2(c.month) + "-" + pad2(c.day) + " " + pad2(c.hour) + ":" + pad2(c.minute) + " " + c.gender;
+}
+
+function saveCase() {
+  var inputs = collectInputs();
+  if (isNaN(inputs.year)||isNaN(inputs.month)||isNaN(inputs.day)||isNaN(inputs.hour)) { alert("请先填写完整的出生信息"); return; }
+  var name = document.getElementById("caseName").value.trim() || autoName(inputs);
+  var note = document.getElementById("caseNote").value;
+  var gsel = document.getElementById("caseGroupSelect");
+  var grp = gsel ? parseInt(gsel.value) : 0;
+  if (isNaN(grp) || grp < 0 || grp >= GROUP_COUNT) grp = 0;
+  var item = Object.assign({}, inputs, {id:genId(), name:name, note:note, group:grp, created_at:Date.now(), updated_at:Date.now()});
+  CASES_CACHE.unshift(item);
+  CASES_CACHE.sort(function(a,b){ return (b.updated_at||0)-(a.updated_at||0); });
+  dbPutCase(item).then(function() { refreshCache().then(function(){ renderCaseList(); renderGroupTabs(); }); });
+  CURRENT_CASE_ID = item.id;
+  document.getElementById("caseName").value = name;
+  document.getElementById("btnUpdate").style.display = "inline-block";
+  renderCaseList(); renderGroupTabs(); updateCaseCount(); gistAutoSync();
+}
+function updateCurrentCase() {
+  if (!CURRENT_CASE_ID) { alert("当前没有关联案例，请先「保存案例」"); return; }
+  var old = getCaseById(CURRENT_CASE_ID);
+  if (!old) { alert("找不到当前案例"); CURRENT_CASE_ID = null; document.getElementById("btnUpdate").style.display = "none"; return; }
+  var inputs = collectInputs();
+  var gsel = document.getElementById("caseGroupSelect");
+  var grp = gsel ? parseInt(gsel.value) : old.group;
+  if (isNaN(grp) || grp < 0 || grp >= GROUP_COUNT) grp = old.group || 0;
+  var updated = Object.assign({}, old, inputs, {
+    name: document.getElementById("caseName").value.trim() || old.name || autoName(inputs),
+    note: document.getElementById("caseNote").value,
+    group: grp,
+    updated_at: Date.now()
+  });
+  for (var i=0; i<CASES_CACHE.length; i++) if (CASES_CACHE[i].id === updated.id) { CASES_CACHE[i] = updated; break; }
+  CASES_CACHE.sort(function(a,b){ return (b.updated_at||0)-(a.updated_at||0); });
+  dbPutCase(updated).then(function() { refreshCache().then(function(){ renderCaseList(); renderGroupTabs(); }); });
+  document.getElementById("caseName").value = updated.name;
+  renderCaseList(); renderGroupTabs(); gistAutoSync();
+}
+function deleteCase(id) {
+  var c = getCaseById(id); if (!c) return;
+  if (!confirm("确定删除案例「" + (c.name||"未命名") + "」吗？")) return;
+  dbDeleteCase(id).then(function() { return refreshCache(); }).then(function() {
+    if (CURRENT_CASE_ID === id) { CURRENT_CASE_ID = null; document.getElementById("btnUpdate").style.display = "none"; }
+    renderCaseList(); renderGroupTabs(); updateCaseCount(); gistAutoSync();
+  });
+}
+function newCase() {
+  CURRENT_CASE_ID = null;
+  document.getElementById("caseName").value = "";
+  document.getElementById("caseNote").value = "";
+  document.getElementById("btnUpdate").style.display = "none";
+  renderCaseList();
+}
+function moveCaseToGroup(id, newGroup) {
+  var c = getCaseById(id); if (!c) return;
+  c.group = newGroup;
+  c.updated_at = Date.now();
+  dbPutCase(c).then(function() { refreshCache().then(function(){ renderCaseList(); renderGroupTabs(); }); });
+  renderGroupTabs();
+  gistAutoSync();
+}
+function loadCase(id) {
+  var c = getCaseById(id); if (!c) return;
+  document.getElementById("calendarType").value = c.calendar_type;
+  document.getElementById("inputYear").value = c.year;
+  document.getElementById("inputMonth").value = c.month;
+  document.getElementById("inputDay").value = c.day;
+  document.getElementById("inputHour").value = c.hour;
+  document.getElementById("inputMinute").value = c.minute;
+  document.getElementById("gender").value = c.gender;
+  document.getElementById("caseName").value = c.name || "";
+  document.getElementById("caseNote").value = c.note || "";
+  var gsel = document.getElementById("caseGroupSelect");
+  if (gsel && typeof c.group === "number") gsel.value = String(c.group);
+  CURRENT_CASE_ID = c.id;
+  document.getElementById("btnUpdate").style.display = "inline-block";
+  renderCaseList(); paipan();
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+function renderCaseList() {
+  var listEl = document.getElementById("caseList"); if (!listEl) return;
+  var list = loadCases();
+
+  var filtered = list.filter(function(c) {
+    var g = (typeof c.group === "number" && c.group >= 0 && c.group < GROUP_COUNT) ? c.group : 0;
+    if (CURRENT_GROUP_FILTER >= 0 && g !== CURRENT_GROUP_FILTER) return false;
+    if (CURRENT_SEARCH) {
+      var q = CURRENT_SEARCH.toLowerCase();
+      var text = ((c.name || "") + " " + (c.note || "") + " " +
+                  c.year + "-" + pad2(c.month) + "-" + pad2(c.day) + " " +
+                  c.hour + ":" + pad2(c.minute) + " " + c.gender).toLowerCase();
+      if (text.indexOf(q) < 0) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    var msg = "暂无案例。填好信息后点「保存案例」即可。";
+    if (CURRENT_SEARCH) msg = "没有匹配「" + escHtml(CURRENT_SEARCH) + "」的案例。";
+    else if (CURRENT_GROUP_FILTER >= 0) msg = "该分组下暂无案例。";
+    listEl.innerHTML = '<div class="case-empty">' + msg + '</div>';
+    return;
+  }
+
+  var html = "";
+  for (var i=0; i<filtered.length; i++) {
+    var c = filtered[i];
+    var activeCls = (c.id === CURRENT_CASE_ID) ? " active" : "";
+    var dt = new Date(c.updated_at || c.created_at || Date.now());
+    var timeStr = dt.getFullYear() + "-" + pad2(dt.getMonth()+1) + "-" + pad2(dt.getDate()) + " " + pad2(dt.getHours()) + ":" + pad2(dt.getMinutes());
+    var gz = (c.calendar_type==="solar"?"公历":"农历") + " " + c.year + "-" + pad2(c.month) + "-" + pad2(c.day) + " " + pad2(c.hour) + ":" + pad2(c.minute) + " " + c.gender;
+    var gIdx = (typeof c.group === "number" && c.group >= 0 && c.group < GROUP_COUNT) ? c.group : 0;
+    var noteHtml = c.note ? '<div class="case-note">' + highlightKeyword(c.note, CURRENT_SEARCH) + '</div>' : "";
+    var cloudBadge = (GIST_CONFIG.enabled && GIST_CONFIG.gistId) ? '<span class="cloud-badge">☁Gist</span>' : '';
+    var grpBadge = '<span class="grp-badge">' + escHtml(GROUPS[gIdx]) + '</span>';
+
+    var grpOptions = "";
+    for (var gi=0; gi<GROUP_COUNT; gi++) {
+      grpOptions += '<option value="' + gi + '"' + (gi===gIdx ? ' selected' : '') + '>' + escHtml(GROUPS[gi]) + '</option>';
+    }
+
+    html += '<div class="case-item' + activeCls + '">' +
+              '<div class="case-info">' +
+                '<div class="case-title">' + highlightKeyword(c.name||"未命名", CURRENT_SEARCH) + grpBadge + cloudBadge + '</div>' +
+                '<div class="case-meta">' + gz + '　·　' + timeStr + '</div>' +
+                noteHtml +
+              '</div>' +
+              '<div class="case-actions">' +
+                '<button class="btn-success" onclick="loadCase(\'' + c.id + '\')">载入</button>' +
+                '<select onchange="moveCaseToGroup(\'' + c.id + '\', parseInt(this.value))" title="移动到分组">' + grpOptions + '</select>' +
+                '<button class="btn-danger" onclick="deleteCase(\'' + c.id + '\')">删除</button>' +
+              '</div></div>';
+  }
+  listEl.innerHTML = html;
+}
+function updateCaseCount() {
+  var n = CASES_CACHE.length;
+  var a = document.getElementById("caseCount"), b = document.getElementById("caseCount2");
+  if (a) a.textContent = n;
+  if (b) b.textContent = n;
+}
+function toggleCaseList() {
+  var p = document.getElementById("casePanel");
+  var isHidden = p.style.display === "none";
+  p.style.display = isHidden ? "block" : "none";
+  if (isHidden) { renderCaseList(); renderGroupTabs(); }
+}
+
+function toggleGistConfig() {
+  var p = document.getElementById("gistConfigPanel");
+  p.style.display = (p.style.display === "none") ? "block" : "none";
+  if (p.style.display === "block") syncGistConfigUI();
+}
+function syncGistConfigUI() {
+  document.getElementById("gistEnabled").checked = GIST_CONFIG.enabled;
+  document.getElementById("gistAutoSync").checked = GIST_CONFIG.autoSync !== false;
+  document.getElementById("gistToken").value = GIST_CONFIG.token || "";
+  document.getElementById("gistId").value = GIST_CONFIG.gistId || "";
+  document.getElementById("gistFilename").value = GIST_CONFIG.filename || "zwds_cases.json";
+  var st = document.getElementById("gistStatus");
+  if (GIST_CONFIG.gistId) {
+    st.innerHTML = '✅ 已关联 Gist：<a href="https://gist.github.com/' + GIST_CONFIG.gistId + '" target="_blank" style="color:#4a90d9;">' + GIST_CONFIG.gistId + '</a>';
+  } else { st.textContent = "尚未创建 Gist"; }
+}
+function saveGistConfigUI() {
+  var enabled = document.getElementById("gistEnabled").checked;
+  var token = document.getElementById("gistToken").value.trim();
+  var gistId = document.getElementById("gistId").value.trim();
+  var filename = document.getElementById("gistFilename").value.trim() || "zwds_cases.json";
+  var autoSync = document.getElementById("gistAutoSync").checked;
+  if (enabled && !token) { alert("启用 Gist 需要填写 Token"); return; }
+  GIST_CONFIG = {enabled:enabled, token:token, gistId:gistId, filename:filename, autoSync:autoSync};
+  saveGistConfigToStorage();
+  syncGistConfigUI(); renderCaseList();
+  alert("Gist 配置已保存");
+  if (enabled && !gistId) { if (confirm("还没有关联 Gist。现在创建一个新的私有 Gist 来保存案例吗？")) gistBackupNow(); }
+}
+async function gistBackupNow() {
+  if (!GIST_CONFIG.token) { alert("请先填写 Token 并保存"); return; }
+  try {
+    var data = await gistPush();
+    alert("✅ 已上传到 Gist：" + data.html_url);
+    syncGistConfigUI(); renderCaseList();
+  } catch(e) { alert("❌ 上传失败：" + e.message); }
+}
+async function gistRestoreNow() {
+  if (!GIST_CONFIG.token || !GIST_CONFIG.gistId) { alert("请先填写 Token 和 Gist ID"); return; }
+  if (!confirm("从 Gist 拉取数据并合并到本地？\n同 ID 的案例会被 Gist 版本覆盖。")) return;
+  try {
+    var result = await gistPull();
+    var list = result.cases;
+    if (!Array.isArray(list)) throw new Error("数据格式异常");
+    if (result.groups && Array.isArray(result.groups) && result.groups.length === GROUP_COUNT) {
+      if (confirm("云端有分组名称配置，是否用云端的覆盖本地分组名称？")) {
+        GROUPS = result.groups;
+        saveGroups();
+        renderGroupMgr(); renderGroupTabs(); initGroupSelect();
+      }
+    }
+    var map = {};
+    for (var i=0; i<CASES_CACHE.length; i++) map[CASES_CACHE[i].id] = CASES_CACHE[i];
+    var added = 0, updated = 0;
+    for (var j=0; j<list.length; j++) {
+      var c = list[j];
+      if (!c.id) c.id = genId();
+      if (typeof c.group !== "number") c.group = 0;
+      if (map[c.id]) updated++; else added++;
+      map[c.id] = c;
+    }
+    CASES_CACHE = Object.keys(map).map(function(k){ return map[k]; });
+    CASES_CACHE.sort(function(a,b){ return (b.updated_at||0)-(a.updated_at||0); });
+    await dbPutAllCases(CASES_CACHE);
+    await refreshCache();
+    renderCaseList(); renderGroupTabs(); updateCaseCount();
+    alert("恢复完成：新增 " + added + "，更新 " + updated);
+  } catch(e) { alert("❌ 恢复失败：" + e.message); }
+}
+async function gistTest() {
+  var token = document.getElementById("gistToken").value.trim();
+  if (!token) { alert("请先填写 Token"); return; }
+  try {
+    var res = await fetch("https://api.github.com/user", {headers:{"Authorization":"Bearer " + token, "Accept":"application/vnd.github+json"}});
+    if (res.ok) { var u = await res.json(); alert("✅ 连接成功！用户：" + u.login); }
+    else alert("❌ 失败，HTTP " + res.status);
+  } catch(e) { alert("❌ 网络错误：" + e.message); }
+}
+
+function exportCases() {
+  var list = loadCases();
+  if (list.length === 0) { alert("没有案例可导出"); return; }
+  var data = JSON.stringify({version:1, app:"zwds", exported_at:Date.now(), groups:GROUPS, cases:list}, null, 2);
+  var blob = new Blob([data], {type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  var d = new Date();
+  a.download = "紫微案例_" + d.getFullYear() + pad2(d.getMonth()+1) + pad2(d.getDate()) + ".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+function importCases(ev) {
+  var file = ev.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var parsed = JSON.parse(e.target.result);
+      var incoming = Array.isArray(parsed) ? parsed : (parsed.cases || []);
+      if (!Array.isArray(incoming)) throw new Error("文件格式错误");
+      if (!Array.isArray(parsed) && parsed.groups && Array.isArray(parsed.groups) && parsed.groups.length === GROUP_COUNT) {
+        if (confirm("文件包含分组名称配置，是否用文件里的覆盖本地分组名称？")) {
+          GROUPS = parsed.groups;
+          saveGroups();
+          renderGroupMgr(); renderGroupTabs(); initGroupSelect();
+        }
+      }
+      var map = {};
+      for (var k=0; k<CASES_CACHE.length; k++) map[CASES_CACHE[k].id] = CASES_CACHE[k];
+      var added = 0, updated = 0;
+      for (var j=0; j<incoming.length; j++) {
+        var c = incoming[j];
+        if (!c.id) c.id = genId();
+        if (typeof c.group !== "number") c.group = 0;
+        if (map[c.id]) updated++; else added++;
+        map[c.id] = c;
+      }
+      CASES_CACHE = Object.keys(map).map(function(k2){ return map[k2]; });
+      CASES_CACHE.sort(function(a,b){ return (b.updated_at||0)-(a.updated_at||0); });
+      dbPutAllCases(CASES_CACHE).then(function() { return refreshCache(); }).then(function() {
+        renderCaseList(); renderGroupTabs(); updateCaseCount(); gistAutoSync();
+      });
+      alert("导入完成：新增 " + added + " 条，更新 " + updated + " 条");
+    } catch(err) { alert("导入失败：" + err.message); }
+    ev.target.value = "";
+  };
+  reader.readAsText(file);
+}
+
+window.addEventListener("DOMContentLoaded", function() {
+  syncGistConfigUI();
+  initGroupSelect();
+  migrateFromLocalStorage().then(function() { return refreshCache(); }).then(function() {
+    renderCaseList(); renderGroupTabs(); updateCaseCount();
+  }).catch(function(e) {
+    console.error("初始化失败", e);
+    renderCaseList(); renderGroupTabs(); updateCaseCount();
+  });
+});
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function() {
+    navigator.serviceWorker.register("sw.js").catch(function(err) {
+      console.warn("SW 注册失败", err);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
