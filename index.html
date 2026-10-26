@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>中天太极4.0紫微数排盘</title>
+<!-- 初始给电脑版使用 1024 宽度，防止在手机上被切掉右侧 -->
+<meta id="viewportMeta" name="viewport" content="width=1024, user-scalable=yes">
+<title>中天太极紫微数排盘</title>
 <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4a90d9">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="太极4.0">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="icon" type="image/svg+xml" href="icon.svg">
-<link rel="apple-touch-icon" href="icon.svg">
 <style>
+  /* ================== 基础与电脑版样式（原汁原味） ================== */
   body { font-family: "Microsoft YaHei", sans-serif; margin: 20px; background: #f5f5f5; }
-  h1 { color: #333; }
+  
+  h1 { color: #333; margin-top: 0; display: flex; align-items: center; gap: 10px; font-size: 24px; }
+  .title-btn { background: none; border: none; color: #333; font-size: 24px; font-weight: bold; cursor: pointer; padding: 0; transition: color 0.2s; }
+  .title-btn:hover { color: #4a90d9; }
+  .title-tip { font-size: 13px; color: #888; font-weight: normal; background: #eee; padding: 4px 10px; border-radius: 12px; cursor: pointer; user-select: none; }
+  
   .input-area { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-  .input-row { margin: 8px 0; }
-  label { margin-right: 15px; }
+  .input-row { margin: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+  label { margin-right: 5px; }
   input, select, textarea { padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; font-size: 14px; }
   textarea { resize: vertical; width: 100%; max-width: 720px; }
   button { padding: 8px 16px; background: #4a90d9; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 15px; margin-right: 6px; }
@@ -26,39 +26,27 @@
   button.btn-secondary { background: #6c757d; }
   button.btn-danger { background: #dc3545; }
   .hint { font-size: 12px; color: #888; margin-top: 5px; }
-  .pan-type-switch { display: inline-flex; border: 1px solid #4a90d9; border-radius: 4px; overflow: hidden; margin-right: 10px; vertical-align: middle; }
-  .pan-type-switch button { border-radius: 0; margin: 0; padding: 8px 14px; background: #fff; color: #4a90d9; border: none; font-weight: bold; }
+  .pan-type-switch { display: inline-flex; border: 1px solid #4a90d9; border-radius: 4px; overflow: hidden; margin-right: 10px; vertical-align: middle; background: #fff; }
+  .pan-type-switch button { border-radius: 0; margin: 0; padding: 0 14px; background: #fff; color: #4a90d9; border: none; font-weight: bold; height: 36px; line-height: 36px; outline: none; -webkit-appearance: none; }
   .pan-type-switch button.active { background: #4a90d9; color: #fff; }
+  
+  /* 电脑版容器 */
   .pan-wrap { position: relative; max-width: 1000px; margin: 50px auto; }
   .zihua-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; overflow: visible; }
-  .pan-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 230px); gap: 0; background: #fff; border: 2px solid #333; width: 100%; position: relative; z-index: 1; }
-  .cell { border: 1px solid #333; position: relative; padding: 6px; font-size: 13px; line-height: 1.6; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+  .pan-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(4, 230px); gap: 0; background: #fff; border: 2px solid #333; width: 100%; position: relative; z-index: 1; box-sizing: border-box; }
+  .cell { border: 1px solid #333; position: relative; padding: 6px; font-size: 13px; line-height: 1.6; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; box-sizing: border-box; min-width: 0; min-height: 0; }
   .cell:hover { background: #f8fbff; }
   .cell.active-gong { background: #fff8e1; outline: 2px solid #dc3545; outline-offset: -2px; }
-  .cell-center { grid-column: 2 / 4; grid-row: 2 / 4; border: none; background: #fff; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 14px; line-height: 1.8; cursor: default; }
+  .cell-center { grid-column: 2 / 4; grid-row: 2 / 4; border: none; background: #fff; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 14px; line-height: 1.8; cursor: default; box-sizing: border-box; min-width: 0; min-height: 0; }
   .cell-center h2 { font-size: 18px; margin: 0 0 10px 0; color: #333; }
   .cell-center p { margin: 3px 0; width: 100%; }
   .cell-center b { color: #4a90d9; }
+  
   .stars { flex: 1; overflow-y: auto; padding-top: 4px; }
-  .top-line-row { display: flex; justify-content: space-between; align-items: center; padding: 1px 4px; font-size: 12px; font-weight: bold; gap: 4px; }
+  .top-line-row { display: flex; justify-content: space-between; align-items: center; padding: 1px 4px; font-size: 12px; font-weight: bold; gap: 4px; position: relative; }
   .changsheng-line { color: #0066cc; text-align: left; flex-shrink: 0; }
-  .zihua-tag-row {
-    position: relative;
-    min-height: 15px;
-    margin-bottom: 0;
-  }
-  .zihua-tag-row .sihua {
-    position: absolute;
-    top: 0;
-    left: 0;
-    margin: 0;
-    padding: 0;
-    background: transparent !important;
-    border-radius: 0;
-    font-size: 13px;
-    line-height: 1;
-    white-space: nowrap;
-  }
+  .zihua-tag-row { position: relative; min-height: 15px; margin-bottom: 0; }
+  .zihua-tag-row .sihua { position: absolute; top: 0; left: 0; margin: 0; padding: 0; background: transparent !important; border-radius: 0; font-size: 13px; line-height: 1; white-space: nowrap; }
   .zihua-tag-row .sihua-lu { color: #28a745 !important; background: transparent !important; }
   .zihua-tag-row .sihua-quan { color: #8e44ad !important; background: transparent !important; }
   .zihua-tag-row .sihua-ke { color: #007bff !important; background: transparent !important; }
@@ -69,7 +57,7 @@
   .liunian-label { flex: 1; text-align: center; font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; display: flex; flex-direction: column; align-items: center; line-height: 1.2; gap: 1px; }
   .liunian-label .xx-line { color: #6a1b9a; }
   .liunian-label .nm-line { color: #c00; }
-  .right-labels { display: flex; gap: 3px; align-items: center; flex-shrink: 0; }
+  .right-labels { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); display: flex; gap: 3px; align-items: center; z-index: 10; }
   .sheng-line { color: #c00; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; line-height: 1.1; }
   .laiyin-line { color: #dc3545; font-weight: bold; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: 2px; line-height: 1.1; border: 2px solid #dc3545; padding: 2px 1px; border-radius: 3px; background: #fff8e1; }
   .bottom-bar { display: flex; justify-content: space-between; align-items: stretch; border-top: 1px solid #333; padding-top: 0; gap: 0; min-height: 56px; }
@@ -91,18 +79,7 @@
   .miaowang.li { color: #007bff; }
   .miaowang.xian { color: #666; }
   .miaowang.wang { color: #28a745; }
-  .sihua {
-    display: inline-block;
-    font-size: 18px;
-    font-weight: bold;
-    line-height: 1;
-    padding: 2px 5px;
-    border-radius: 3px;
-    margin-top: 2px;
-    margin-right: 1px;
-    color: #fff;
-    vertical-align: top;
-  }
+  .sihua { display: inline-block; font-size: 18px; font-weight: bold; line-height: 1; padding: 2px 5px; border-radius: 3px; margin-top: 2px; margin-right: 1px; color: #fff; vertical-align: top; }
   .sihua-lu { background: #28a745; }
   .sihua-quan { background: #8e44ad; }
   .sihua-ke { background: #007bff; }
@@ -120,6 +97,7 @@
   .feihua-kui { color: #fff !important; background: #17a2b8 !important; font-weight: 900 !important; padding: 2px 3px !important; }
   .feihua-fu { color: #fff !important; background: #ff9800 !important; font-weight: 900 !important; padding: 2px 3px !important; }
   .feihua-huo { color: #fff !important; background: #dc3545 !important; font-weight: 900 !important; padding: 2px 3px !important; }
+  
   .timeline { margin-top: 10px; background: #fff; border: 1px solid #333; border-radius: 4px; overflow-x: auto; }
   .timeline-row { display: flex; border-bottom: 1px solid #333; min-height: 50px; }
   .timeline-row:last-child { border-bottom: none; }
@@ -180,11 +158,156 @@
   .gist-config .tip { color: #888; font-size: 12px; margin-top: 6px; line-height: 1.7; }
   .gist-config .tip a { color: #4a90d9; }
   .search-hit { background: #fff3b0; padding: 0 2px; border-radius: 2px; }
+
+  /* ================== 手机版独立样式（加长版、大字） ================== */
+  body.mobile-mode { margin: 10px; padding: 0; }
+  body.mobile-mode .input-area { padding: 10px; margin-bottom: 10px; }
+  body.mobile-mode .input-row { margin: 6px 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  body.mobile-mode .input-row label { display: inline-flex; flex-direction: column; font-size: 13px; margin-right: 0; }
+  body.mobile-mode input, body.mobile-mode select { font-size: 14px; padding: 4px; box-sizing: border-box; width: 100%; min-width: 60px; }
+  body.mobile-mode button { font-size: 14px; padding: 6px 10px; margin-right: 4px; margin-bottom: 4px; }
+  
+  /* 手机版排盘切换器，彻底修复白边和填充问题 */
+  body.mobile-mode .pan-type-switch { 
+    display: inline-flex; 
+    border: 1px solid #4a90d9; 
+    border-radius: 4px; 
+    overflow: hidden; 
+    margin-bottom: 8px; 
+    height: 34px; 
+    background: #fff;
+    vertical-align: middle;
+    box-sizing: border-box;
+    align-items: stretch; /* 强制子元素撑满高度 */
+  }
+  
+  body.mobile-mode .pan-type-switch button { 
+    margin: 0 !important; 
+    padding: 0 12px !important; 
+    height: auto !important; 
+    line-height: normal !important; 
+    border-radius: 0 !important; 
+    outline: none !important; 
+    -webkit-appearance: none; 
+    display: flex; /* flex 居中，告别行高错位 */
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  body.mobile-mode .pan-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) !important;
+    width: 100% !important;
+    aspect-ratio: 1 / 1.55;
+    height: auto;
+  }
+
+  /* 中宫专属处理 */
+  body.mobile-mode .cell-center { 
+    padding: 2px; 
+    font-size: 11px; 
+    line-height: 1.4; 
+    overflow: hidden; 
+    zoom: 0.85; 
+  }
+  body.mobile-mode .cell-center h2 { font-size: 14px; margin-bottom: 4px; }
+  body.mobile-mode .cell-center p { margin: 2px 0; white-space: normal; word-break: break-all; }
+
+  body.mobile-mode .cell { padding: 3px; font-size: 12px; line-height: 1.3; }
+  body.mobile-mode .star-group { margin-right: 1px; }
+  body.mobile-mode .star-key, body.mobile-mode .star-name { font-size: 15px; padding: 1px 0; }
+  body.mobile-mode .miaowang { font-size: 12px; margin-top: 1px; }
+  body.mobile-mode .sihua { font-size: 12px; padding: 1px 2px; }
+  body.mobile-mode .v-star { font-size: 11px; margin-right: 2px; padding: 1px 0; }
+  
+  body.mobile-mode .top-line-row { font-size: 10px; padding: 1px 2px; gap: 2px; }
+  body.mobile-mode .changsheng-line { font-size: 10px; }
+  body.mobile-mode .liunian-label { font-size: 9px; gap: 1px; }
+  body.mobile-mode .sheng-line, body.mobile-mode .laiyin-line { font-size: 11px; letter-spacing: 1px; padding: 1px; }
+  
+  body.mobile-mode .bottom-bar { min-height: 36px; }
+  body.mobile-mode .left-stack { min-width: 24px; padding: 1px; }
+  body.mobile-mode .tiangan, body.mobile-mode .dizhi { font-size: 15px; line-height: 1.2; }
+  body.mobile-mode .center-top { padding: 1px; }
+  body.mobile-mode .daxian-name { font-size: 13px; }
+  body.mobile-mode .age-range { font-size: 11px; padding: 0; }
+  body.mobile-mode .right-vertical { min-width: 22px; padding: 1px; }
+  body.mobile-mode .gong-name-vertical { font-size: 14px; letter-spacing: 1px; }
+  body.mobile-mode .zihua-tag-row { min-height: 12px; }
+  body.mobile-mode .zihua-tag-row .sihua { font-size: 11px; }
+  
+  body.mobile-mode .timeline { font-size: 12px; margin-top: 8px; }
+  body.mobile-mode .timeline-label { width: 45px; font-size: 12px; }
+  body.mobile-mode .timeline-cell { min-width: 45px; padding: 3px; font-size: 11px; }
+  body.mobile-mode .feihua-legend { font-size: 12px; padding: 6px; margin-top: 6px; line-height: 1.6; }
+
+  /* ===== 超过5个星星时自动缩小的样式 ===== */
+  body.mobile-mode .stars.shrink-stars .star-group { margin-right: 0px; }
+  body.mobile-mode .stars.shrink-stars .star-key, 
+  body.mobile-mode .stars.shrink-stars .star-name { 
+    font-size: 12px; 
+    letter-spacing: -1px; 
+    padding: 0; 
+  }
+  body.mobile-mode .stars.shrink-stars .miaowang { font-size: 9px; margin-top: 0; }
+  body.mobile-mode .stars.shrink-stars .sihua { font-size: 9px; padding: 0 1px; margin-top: 0; }
+  body.mobile-mode .stars.shrink-stars .v-star { font-size: 9px; margin-right: 1px; padding: 0; }
+  /* ==================================================== */
+/* 上方四个宫位：统一把星星往上挤 (6px 极简版) */
+/* ==================================================== */
+
+/* 1. 顶部只留 6px 给字母 */
+body.mobile-mode #cell-巳,
+body.mobile-mode #cell-午,
+body.mobile-mode #cell-未,
+body.mobile-mode #cell-申 {
+  padding-top: 6px !important; 
+}
+
+/* 2. 字母那一行跟着往上拉 6px */
+body.mobile-mode #cell-巳 .zihua-tag-row,
+body.mobile-mode #cell-午 .zihua-tag-row,
+body.mobile-mode #cell-未 .zihua-tag-row,
+body.mobile-mode #cell-申 .zihua-tag-row {
+  margin-top: -6px !important; 
+  height: 6px !important;      
+  min-height: 6px !important;
+}
+/* ======== 终极修复：来因/身宫排版 ======== */
+.top-line-row {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 18px !important; /* 强制固定高度，不会被撑大 */
+    padding: 0 2px !important;
+}
+.right-labels {
+    position: absolute !important;
+    right: 0px !important;
+    top: -2px !important;  /* 往上调：数字越小越靠上，-2px 代表稍微超出一点格子顶部，你可以根据喜好调成 0px 或 -4px */
+    display: flex !important;
+    align-items: flex-start !important; /* 让里面的字贴顶对齐 */
+    z-index: 10 !important;
+}
+.sheng-line, .laiyin-line {
+    font-size: 10px !important; /* 缩小字号 */
+    letter-spacing: 0 !important; /* 去掉字距 */
+    line-height: 1 !important;
+    padding: 0 !important;
+    border-width: 1px !important; /* 边框变细 */
+}
+.liunian-label {
+    padding: 0 24px !important; /* 给流年文字左右留出空间，防止重叠 */
+}
 </style>
 </head>
 <body>
 
-<h1>中天太极4.0紫微数排盘</h1>
+<h1>
+  <button class="title-btn" onclick="toggleViewMode()">中天太极紫微</button>
+  <span class="title-tip" id="viewTip" onclick="toggleViewMode()">当前：电脑版（点击切换）</span>
+</h1>
 
 <div class="input-area">
   <div class="input-row">
@@ -199,8 +322,8 @@
     <label>性别：<select id="gender"><option value="男">男</option><option value="女">女</option></select></label>
   </div>
   <div class="input-row">
-    <label>案例名：<input type="text" id="caseName" placeholder="留空自动生成" style="width:240px"></label>
-    <label>分组：<select id="caseGroupSelect" style="width:130px;"></select></label>
+    <label>案例名：<input type="text" id="caseName" placeholder="留空自动生成" style="width:200px"></label>
+    <label>分组：<select id="caseGroupSelect" style="width:120px;"></select></label>
   </div>
   <div class="input-row">
     <label style="vertical-align:top;">笔记：</label>
@@ -420,6 +543,26 @@ var PAN_TYPE = "zhongtian";
 var ZW_HUO  = {"寅午戌":"丑","申子辰":"寅","巳酉丑":"卯","亥卯未":"酉"};
 var ZW_LING = {"寅午戌":"卯","申子辰":"戌","巳酉丑":"戌","亥卯未":"戌"};
 var ZW_MA   = {"寅午戌":"申","申子辰":"寅","巳酉丑":"亥","亥卯未":"巳"};
+
+var VIEW_MODE = "desktop";
+
+function toggleViewMode() {
+  VIEW_MODE = VIEW_MODE === "desktop" ? "mobile" : "desktop";
+  var isMob = VIEW_MODE === "mobile";
+  document.body.classList.toggle("mobile-mode", isMob);
+  document.getElementById("viewTip").textContent = isMob ? "当前：手机版（点击切换）" : "当前：电脑版（点击切换）";
+  
+  var vp = document.getElementById("viewportMeta");
+  if (isMob) {
+    vp.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+  } else {
+    vp.setAttribute("content", "width=1024, user-scalable=yes");
+  }
+  
+  if (PAN_DATA) {
+    renderPan();
+  }
+}
 
 function calcZiweiDz(day, ju) {
   var shang = Math.floor(day / ju);
@@ -643,6 +786,7 @@ function paipan() {
   var hourIdx = DIZHI.indexOf(hourDz);
   if (hourIdx < 0) { document.getElementById("result").innerHTML = '<p class="error">时柱地支无效。</p>'; return; }
 
+  /* 紫微斗数大限顺逆用"生年天干阴阳" */
   var isYangYear = YANG_GAN.indexOf(yearTg) >= 0;
 
   var mingGong, shenGong, taijiGong, tiankuGong, palaces, sihua, waiJuText={}, gongGan, juUsed, juNameUsed;
@@ -660,6 +804,7 @@ function paipan() {
     gongGan = zw.gongGan;
     taijiGong = zw.ziweiGong;
     tiankuGong = zw.tianfuGong;
+    /* 紫微斗数大限顺逆：按生年天干阴阳（阳男阴女顺、阴男阳女逆） */
     daXianShun = (isYangYear && gender==="男") || (!isYangYear && gender==="女");
     daXianText = {}; daXianData = [];
     var dxIdx = DIZHI.indexOf(mingGong);
@@ -677,7 +822,7 @@ function paipan() {
     else if (groupZ==="申子辰") xxStartDz="戌";
     else if (groupZ==="巳酉丑") xxStartDz="未";
     else if (groupZ==="亥卯未") xxStartDz="丑";
-    var xxShun = (gender === "男");
+    var xxShun = !daXianShun;
     var xxIdx = DIZHI.indexOf(xxStartDz);
     for (var age=1; age<=12; age++) {
       xiaoXianText[DIZHI[xxIdx]] = age + "岁";
@@ -783,6 +928,8 @@ function paipan() {
       var wDz = DIZHI[(wenGuiIdx + (waiJuShun ? wi : -wi) + 120) % 12];
       waiJuText[wDz] = WAIJU_STARS[wi];
     }
+    /* 中天太极/中天六化大限顺逆：按"命宫地支阴阳"（命宫属阴则视为阴）
+       —— 阳男阴女顺行、阴男阳女逆行 */
     daXianShun = (isYangMing && gender==="男") || (!isYangMing && gender==="女");
     daXianText = {}; daXianData = [];
     var daXianIdx = DIZHI.indexOf(mingGong);
@@ -942,12 +1089,7 @@ function getXiaoXianGong(age) {
   else if (group==="亥卯未") startDz="丑";
   else return null;
   var startIdx = DIZHI.indexOf(startDz);
-  var xxShun;
-  if (d.panType === "ziwei") {
-    xxShun = (d.gender === "男");
-  } else {
-    xxShun = !d.daXianShun;
-  }
+  var xxShun = !d.daXianShun;
   var step = age - 1;
   if (xxShun) return DIZHI[(startIdx + step) % 12];
   return DIZHI[(startIdx - step + 1200) % 12];
@@ -1111,7 +1253,17 @@ function renderPan() {
                      '</div>' +
                      '<div class="right-vertical"><div class="gong-name-vertical">' + gongName + '</div></div>' +
                      '</div>';
-    cellContents[dz] = zihuaTagRowTop + '<div class="stars">' + starHtml + infoStarsHtml + '</div>' + bottomBar;
+                     
+    // ================= 自动缩小逻辑 =================
+    // 计算当前宫位的星星总数（主星 + 外局星 + 马前星）
+    var extCount = (d.waiJuText && d.waiJuText[dz] ? 1 : 0) + (d.maQianText && d.maQianText[dz] ? d.maQianText[dz].length : 0);
+    var starCount = rawStars.length + extCount;
+    
+    // 如果是手机版，且星星总数 > 5，就加上 shrink-stars 类
+    var shrinkCls = (VIEW_MODE === "mobile" && starCount > 5) ? " shrink-stars" : "";
+    // ===============================================
+
+    cellContents[dz] = zihuaTagRowTop + '<div class="stars' + shrinkCls + '">' + starHtml + infoStarsHtml + '</div>' + bottomBar;
   }
 
   var sihuaLines = [];
@@ -1201,7 +1353,7 @@ function positionZihuaTags() {
       var sr = starEl.getBoundingClientRect();
       var cx = sr.left - cellRect.left + sr.width / 2;
       var leftPx = Math.round(cx + 3);
-      while (usedX[leftPx]) leftPx += 22;
+      while (usedX[leftPx]) leftPx += 20;
       usedX[leftPx] = true;
       tag.style.left = leftPx + "px";
     }
@@ -1252,20 +1404,27 @@ function drawArrows() {
   var svg = document.getElementById("zihuaSvg");
   var panGrid = document.getElementById("panGrid");
   if (!svg || !panGrid) return;
-  var gridRect = panGrid.getBoundingClientRect();
-  var w = gridRect.width, h = gridRect.height;
+  
+  var w = panGrid.offsetWidth;
+  var h = panGrid.offsetHeight;
+  
   svg.setAttribute("viewBox", "0 0 " + w + " " + h);
-  svg.style.width = w + "px"; svg.style.height = h + "px";
-  var outDist = 38;
-  var svgHtml = '<defs>' +
-    '<marker id="zh-arrow-lu" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#28a745"/></marker>' +
-    '<marker id="zh-arrow-quan" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#8e44ad"/></marker>' +
-    '<marker id="zh-arrow-ke" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#007bff"/></marker>' +
-    '<marker id="zh-arrow-ji" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#dc3545"/></marker>' +
-    '<marker id="zh-arrow-kui" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#17a2b8"/></marker>' +
-    '<marker id="zh-arrow-fu" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#ff9800"/></marker>' +
-    '<marker id="zh-arrow-huo" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0,0 L0,8 L8,4 z" fill="#dc3545"/></marker>' +
-    '</defs>';
+  svg.style.width = w + "px"; 
+  svg.style.height = h + "px";
+  
+  var isMob = document.body.classList.contains("mobile-mode");
+  var outDist = isMob ? 20 : 38;
+  var strokeW = isMob ? 1.5 : 2;
+  
+var svgHtml = '<defs>' +
+  '<marker id="zh-arrow-lu" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 L2,4 z" fill="#28a745"/></marker>' +
+  '<marker id="zh-arrow-quan" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 L2,4 z" fill="#8e44ad"/></marker>' +
+  '<marker id="zh-arrow-ke" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 L2,4 z" fill="#007bff"/></marker>' +
+  '<marker id="zh-arrow-ji" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 L2,4 z" fill="#dc3545"/></marker>' +
+  '<marker id="zh-arrow-kui" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 L2,4 z" fill="#17a2b8"/></marker>' +
+  '<marker id="zh-arrow-fu" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 L2,4 z" fill="#ff9800"/></marker>' +
+  '<marker id="zh-arrow-huo" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 L2,4 z" fill="#dc3545"/></marker>' +
+  '</defs>';
 
   var zihuaMap = getZiHuaMap();
   for (var dz in zihuaMap) {
@@ -1277,17 +1436,18 @@ function drawArrows() {
       var types = zihuaMap[dz][star];
       var starGroup = cell.querySelector('.star-group[data-star="' + star + '"]');
       if (!starGroup) continue;
-      var sgRect = starGroup.getBoundingClientRect();
-      var sx = sgRect.left - gridRect.left + sgRect.width / 2;
-      var syTop = sgRect.top - gridRect.top;
-      var syBottom = sgRect.bottom - gridRect.top;
+      
+      var sx = cell.offsetLeft + starGroup.offsetLeft + starGroup.offsetWidth / 2;
+      var syTop = cell.offsetTop + starGroup.offsetTop;
+      var syBottom = syTop + starGroup.offsetHeight;
+      
       for (var ti=0; ti<types.length; ti++) {
         var type = types[ti];
         var label = getSihuaLabelWithContext(thisGongGan, star, type);
         var color = SIHUA_COLOR[type];
         var marker = "zh-arrow-" + SIHUA_CLS[type];
         var path = "", labelX = 0, labelY = 0;
-        var offsetY = ti * 16;
+        var offsetY = ti * (isMob ? 12 : 16);
         if (GROUP_BOTTOM.indexOf(dz)>=0) {
           var syB2 = syBottom + offsetY;
           path = "M" + sx + " " + syB2 + " L" + sx + " " + (h+outDist+offsetY);
@@ -1307,15 +1467,16 @@ function drawArrows() {
           labelX = sx + 5; labelY = syT2 - 3;
         }
         if (path) {
-          svgHtml += '<path d="' + path + '" stroke="' + color + '" stroke-width="2" fill="none" marker-end="url(#' + marker + ')"/>';
+          svgHtml += '<path d="' + path + '" stroke="' + color + '" stroke-width="' + strokeW + '" fill="none" marker-end="url(#' + marker + ')"/>';
           if (!inCellLabel) {
-            svgHtml += '<text x="' + labelX + '" y="' + labelY + '" fill="' + color + '" font-size="13" font-weight="bold" font-family="Microsoft YaHei, Arial">' + label + '</text>';
+            svgHtml += '<text x="' + labelX + '" y="' + labelY + '" fill="' + color + '" font-size="' + (isMob?12:13) + '" font-weight="bold" font-family="Microsoft YaHei, Arial">' + label + '</text>';
           }
         }
       }
     }
   }
 
+  /* 对宫飞化 */
   for (var i=0; i<DIZHI.length; i++) {
     var dz2 = DIZHI[i];
     var duiDz = DUI_GONG[dz2];
@@ -1341,23 +1502,24 @@ function drawArrows() {
     if (len === 0) continue;
     var rx = -dy/len, ry = dx/len;
     var t = 0.92;
+    var offsetStep = isMob ? 10 : 14;
     for (var k=0; k<matched.length; k++) {
       var type3 = matched[k].type;
       var star3 = matched[k].star;
       var label3 = getSihuaLabelWithContext(gGan, star3, type3);
-      var normalOffset = (k - (matched.length-1)/2) * 14;
+      var normalOffset = (k - (matched.length-1)/2) * offsetStep;
       var bx = pts.x1 + rx * normalOffset;
       var by = pts.y1 + ry * normalOffset;
       var ex3 = pts.x2 + rx * normalOffset;
       var ey3 = pts.y2 + ry * normalOffset;
       var px = bx + (ex3 - bx) * t;
       var py = by + (ey3 - by) * t;
-      var lx = px + rx * 14;
-      var ly = py + ry * 14;
+      var lx = px + rx * offsetStep;
+      var ly = py + ry * offsetStep;
       var color2 = SIHUA_COLOR[type3];
       var marker2 = "zh-arrow-" + SIHUA_CLS[type3];
-      svgHtml += '<line x1="' + bx + '" y1="' + by + '" x2="' + ex3 + '" y2="' + ey3 + '" stroke="' + color2 + '" stroke-width="2" marker-end="url(#' + marker2 + ')" opacity="0.85"/>';
-      svgHtml += '<text x="' + lx + '" y="' + ly + '" fill="' + color2 + '" font-size="13" font-weight="bold" font-family="Microsoft YaHei, Arial">' + label3 + '</text>';
+      svgHtml += '<line x1="' + bx + '" y1="' + by + '" x2="' + ex3 + '" y2="' + ey3 + '" stroke="' + color2 + '" stroke-width="' + strokeW + '" marker-end="url(#' + marker2 + ')" opacity="0.85"/>';
+      svgHtml += '<text x="' + lx + '" y="' + ly + '" fill="' + color2 + '" font-size="' + (isMob?12:13) + '" font-weight="bold" font-family="Microsoft YaHei, Arial">' + label3 + '</text>';
     }
   }
   svg.innerHTML = svgHtml;
@@ -1926,16 +2088,6 @@ window.addEventListener("DOMContentLoaded", function() {
     renderCaseList(); renderGroupTabs(); updateCaseCount();
   });
 });
-</script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function() {
-    navigator.serviceWorker.register("sw.js").catch(function(err) {
-      console.warn("SW 注册失败", err);
-    });
-  });
-}
 </script>
 
 </body>
