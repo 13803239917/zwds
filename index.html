@@ -3,6 +3,8 @@
 <head>
 <!-- 初始给电脑版使用 1024 宽度，防止在手机上被切掉右侧 -->
 <meta id="viewportMeta" name="viewport" content="width=1024, user-scalable=yes">
+<!-- 【新增】引入 PWA 配置文件 -->
+<link rel="manifest" href="manifest.json">
 <title>中天太极紫微数排盘</title>
 <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
 <style>
@@ -2090,5 +2092,15 @@ window.addEventListener("DOMContentLoaded", function() {
 });
 </script>
 
+<!-- 【新增】注册 Service Worker，彻底激活 PWA 安装功能 -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker 注册成功，PWA 激活'))
+        .catch(err => console.log('Service Worker 注册失败:', err));
+    });
+  }
+</script>
 </body>
 </html>
